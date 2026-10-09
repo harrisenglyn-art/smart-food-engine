@@ -176,7 +176,6 @@ else:
                                             for step in steps:
                                                 st.write(f"**Step {step.get('number')}:** {step.get('step')}")
                                         elif recipe.get("instructions"):
-                                        elif recipe.get("instructions"):
                                             st.write(recipe["instructions"])
                                         else:
                                             st.write("Mix ingredients well and cook thoroughly according to taste!")
