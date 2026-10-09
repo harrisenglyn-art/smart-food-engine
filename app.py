@@ -229,12 +229,13 @@ else:
                             if raw_places:
                                 st.success(f"✨ Found live dining venues matched to your profile!")
                                 
-                                rest_tab_names = [f"📍 Rank #{i+1}: {res.get('name', 'Restaurant')[:20]}..." for i, res in enumerate(raw_places)]
+                                # 🟢 FIX: Extract the human-readable text title for the tab headers
+                                rest_tab_names = [f"📍 Rank #{i+1}: {res.get('displayName', {}).get('text', 'Restaurant')[:15]}..." for i, res in enumerate(raw_places)]
                                 restaurant_swiper = st.tabs(rest_tab_names)
                                 
                                 for index, res in enumerate(raw_places):
                                     with restaurant_swiper[index]:
-                                        # Extract the inner text dictionary from the modern nested layout structure
+                                        # 🟢 FIX: Extract the human-readable text title for the card header
                                         display_name = res.get("displayName", {}).get("text", "Local Venue")
                                         st.subheader(display_name)
                                         
@@ -242,7 +243,6 @@ else:
                                         rating = res.get("rating", "No reviews yet")
                                         total_reviews = res.get("userRatingCount", 0)
                                         
-                                        # 🚀 UNIFIED LOGIC BLOCK
                                         google_price_tier = res.get("priceLevel", "PRICE_LEVEL_UNSPECIFIED")
                                         price_symbols = {
                                             "PRICE_LEVEL_INEXPENSIVE": "$", 
@@ -253,6 +253,7 @@ else:
                                         google_price = price_symbols.get(google_price_tier, "$$")
                                         
                                         st.markdown(f"📍 **Address:** {address}")
+
                                         st.markdown(f"📊 **Community Rating:** ⭐ {rating} / 5 ({total_reviews} reviews) | 💰 **Price Level:** `{google_price}`")
                                         
                                         # Open/Closed structural evaluation
