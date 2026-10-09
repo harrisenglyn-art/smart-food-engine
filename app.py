@@ -1,138 +1,12 @@
 import streamlit as st
 import requests
 
-# --- CONFIGURATION ---
+# --- 1. CONFIGURATION & ENCRYPTED KEYS ---
 SPOONACULAR_API_KEY = "9023d1a591b544889df6a7c364cfb898"
 
 st.set_page_config(page_title="Smart Food Engine", page_icon="🍔", layout="centered")
 
-# --- SIDEBAR (Premium Tier monetization anchor) ---
-st.sidebar.markdown("👑 **Premium Member?** [Sign In Here](#)")
-st.sidebar.markdown("---")
-st.sidebar.markdown("🔒 *Unlock advanced calorie metrics & instant allergen blocking for just $2.99/mo.*")
-
-st.title("🍔 Smart Food Recommendation Engine")
-st.write("Solve your daily food dilemma instantly. Tell us what you're craving!")
-
-# --- TWO INITIAL OPTIONS: THE TOP NAVIGATION TABS ---
-tab_cook, tab_go_out = st.tabs(["🍳 Cook at Home", "🚗 Go Out to Eat"])
-
-# =========================================================================
-# 🍳 TAB 1: COOK AT HOME
-# =========================================================================
-with tab_cook:
-    st.header("Cook a Perfect Meal")
-    ingredients = st.text_input("What ingredients do you have?", placeholder="e.g., chicken, pasta, garlic", key="cook_ing")
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        cuisine_cook = st.selectbox("Cuisine Choice", ["Any", "Italian", "Mexican", "Asian", "American", "Mediterranean"], key="c_cook")
-        mood_cook = st.selectbox("Current Mood", ["Comfort Food", "Quick & Easy", "Healthy & Light", "Cozy"], key="m_cook")
-    with col2:
-        health_goal = st.selectbox("Dietary Targets", ["None", "Gluten Free", "Ketogenic", "Vegan", "Vegetarian"], key="h_cook")
-        servings = st.number_input("Number of Servings Needed", min_value=1, max_value=20, value=2, step=1, key="s_cook")
-        
-    max_time = st.slider("Max Prep/Cooking Time (Minutes)", min_value=10, max_value=120, value=60, step=5, key="t_cook")
-    
-    if st.button("Generate Home Recipes", type="primary"):
-        if not ingredients:
-            st.warning("Please input ingredients to match!")
-        else:
-            st.info("🍳 Searching Spoonacular database for your top 3 ranked options...")
-            
-            url = "https://api.spoonacular.com/recipes/complexSearch"
-            params = {
-                "apiKey": SPOONACULAR_API_KEY,
-                "query": ingredients,
-                "maxReadyTime": max_time,
-                "addRecipeInformation": True,
-                "fillIngredients": True,  
-                "number": 3               
-            }
-            if health_goal != "None":
-                params["diet"] = health_goal.lower().replace(" ", "")
-            if cuisine_cook != "Any":
-                params["cuisine"] = cuisine_cook.lower()
-                
-            try:
-                # Use a custom timeout to prevent the pipeline from hanging
-                response = requests.get(url, params=params, timeout=10)
-                
-                # --- DEFENSIVE SERVER CHECKS ---
-                if response.status_code == 401:
-                    st.error("🔴 API Key Authorization Failed. Please check that your key was copied correctly on line 5 without hidden characters!")
-                elif response.status_code == 402:
-                    st.error("🔴 Daily Free Limit Reached! Your Spoonacular developer points quota has reset limits. Credits automatically refresh at midnight.")
-                    st.info("💡 Note: This confirms your code is perfectly connected! Spoonacular's free tier has a set daily allowance.")
-                elif response.status_code != 200:
-                    st.error(f"🔴 Spoonacular Server Error: Code {response.status_code}. Try removing some filters.")
-                else:
-                    # Only parse JSON if the status is exactly 200 OK
-                    data = response.json()
-                    recipes = data.get("results", [])
-                    
-                    if recipes:
-                        st.success(f"✨ Found {len(recipes)} amazing matches tailored to your profile!")
-                        
-                        recipe_tab_names = [f"🏆 Rank #{i+1}: {r.get('title')[:25]}..." for i, r in enumerate(recipes)]
-                        swiper_tabs = st.tabs(recipe_tab_names)
-                        
-                        for index, recipe in enumerate(recipes):
-                            with swiper_tabs[index]:
-                                st.subheader(recipe.get("title"))
-                                if recipe.get("image"):
-                                    st.image(recipe["image"])
-                                    
-                                base_servings = recipe.get("servings", 1)
-                                ready_in = recipe.get("readyInMinutes", max_time)
-                                st.markdown(f"⏱️ **Ready in:** {ready_in} mins | 🍽️ **Base Servings:** {base_servings} ➔ **Your Scaled Request:** {servings} servings")
-                                
-                                # --- MATH SCALING LOOP ENGINE ---
-                                st.markdown("### 🛒 Scaled Ingredients List")
-                                scale_multiplier = float(servings) / float(base_servings)
-                                
-                                extended_ingredients = recipe.get("extendedIngredients", [])
-                                if extended_ingredients:
-                                    for ing in extended_ingredients:
-                                        base_amount = ing.get("amount", 0.0)
-                                        scaled_amount = base_amount * scale_multiplier
-                                        unit = ing.get("unit", "")
-                                        name = ing.get("name", "")
-                                        st.write(f"• **{scaled_amount:.2f} {unit}** of {name}")
-                                else:
-                                    st.write("Refer to directions below for items.")
-                                    
-                                st.markdown("### 📋 Step-by-Step Instructions")
-                                analyzed = recipe.get("analyzedInstructions")
-                                if analyzed and len(analyzed) > 0:
-                                    # Target steps list safely
-                                    steps = recipe["analyzedInstructions"][0].get("steps", [])
-                                    for step in steps:
-                                        st.write(f"**Step {step.get('number')}:** {step.get('step')}")
-                                elif recipe.get("instructions"):
-                                    st.write(recipe["instructions"])
-                                else:
-                                    st.write("Mix ingredients well and cook thoroughly according to taste!")
-                                    
-                                st.markdown("---")
-                                st.info(f"🛒 **Missing something?** [Instantly order these scaled ingredients for {servings} people via Instacart](https://instacart.com)")
-                    else:
-                        st.error("No recipes matched that exact configuration. Try widening your cooking time or filters!")
-            except Exception as e:
-                st.error(f"Failed to process recipe pipeline data safely. System message: {str(e)}")
-
-# =========================================================================
-# 🚗 TAB 2: GO OUT TO EAT
-# =========================================================================
-import streamlit as st
-import requests
-
-# --- CONFIGURATION & ENCRYPTED KEYS ---
-SPOONACULAR_API_KEY = "d1a32c1d8fb42388712a2d829f784a1e62a7e474"
-
-st.set_page_config(page_title="Smart Food Engine", page_icon="🍔", layout="centered")
-
-# --- UI STYLE UPGRADES (UX/Aesthetics) ---
+# --- 2. UI STYLE UPGRADES (UX/Aesthetics) ---
 st.markdown("""
     <style>
     .stButton>button {
@@ -152,11 +26,11 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- INITIALIZE SESSION STATE FOR ACCOUNT TRACKING ---
+# --- 3. INITIALIZE SESSION STATE FOR ACCOUNT TRACKING ---
 if "user_tier" not in st.session_state:
     st.session_state["user_tier"] = "Free"
 
-# --- SIDEBAR (Premium Tier Monetization Anchor) ---
+# --- 4. SIDEBAR (Premium Tier Monetization Anchor) ---
 st.sidebar.markdown(f"👤 **Account Tier:** `{st.session_state['user_tier']}`")
 if st.session_state["user_tier"] == "Free":
     st.sidebar.markdown("---")
@@ -165,7 +39,7 @@ if st.session_state["user_tier"] == "Free":
         st.session_state["show_registration"] = True
 st.sidebar.markdown("---")
 
-# --- PREMIUM MEMBER REGISTRATION FLOW ---
+# --- 5. PREMIUM MEMBER REGISTRATION FLOW ---
 if st.session_state.get("show_registration"):
     st.header("👑 Join the Premium Membership Tier")
     st.write("Create your account and unlock hyper-personalized food recommendations.")
@@ -189,7 +63,7 @@ if st.session_state.get("show_registration"):
         st.session_state["show_registration"] = False
         st.rerun()
 
-# --- MAIN APP INTERFACE LAYER ---
+# --- 6. MAIN APP INTERFACE LAYER ---
 else:
     st.title("🍔 Smart Food Recommendation Engine")
     st.write("Solve your daily food dilemma instantly. Tell us what you're craving!")
@@ -296,7 +170,7 @@ else:
                 except Exception as e:
                     st.error(f"Failed to process recipe pipeline data safely. System message: {str(e)}")
 
-       # =========================================================================
+    # =========================================================================
     # 🚗 TAB 2: GO OUT TO EAT (LIVE GOOGLE PLACES API INTEGRATION)
     # =========================================================================
     with tab_go_out:
@@ -306,6 +180,7 @@ else:
         user_location = st.text_input("Enter your current City or Zip Code:", placeholder="e.g., Los Angeles, CA", key="loc_go")
         
         col1_go, col2_go = st.columns(2)
+    
         with col1_go:
             cuisine_go = st.selectbox("What Cuisine do you want?", ["Any", "Italian", "Mexican", "Asian", "Burgers/American", "Thai", "Sushi"], key="c_go")
             mood_go = st.selectbox("What is your current vibe?", ["Casual Dining", "Date Night", "Late Night Cravings", "Fast & Trendy"], key="m_go")
