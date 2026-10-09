@@ -200,9 +200,10 @@ else:
                 if not GOOGLE_KEY:
                     st.error("🔴 Google Places API Key missing! Please add GOOGLE_PLACES_KEY to your Streamlit Cloud Secrets dashboard.")
                 else:
+                    # 🟢 20 SPACES INDENTATION (LINE 204+)
                     query_string = f"{cuisine_go if cuisine_go != 'Any' else ''} {mood_go} restaurant near {user_location}"
                     
-                   budget_map = {"$": 1, "$$": 2, "$$$": 3, "$$$$": 4}
+                    budget_map = {"$": 1, "$$": 2, "$$$": 3, "$$$$": 4}
                     max_price_tier = budget_map.get(budget_go, 2)
                     
                     google_url = "https://googleapis.com"
