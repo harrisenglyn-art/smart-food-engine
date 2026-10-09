@@ -114,13 +114,12 @@ else:
                     if cuisine_cook != "Any":
                         params["cuisine"] = cuisine_cook.lower()
                         
-                    # 🚀 FIX: Mask the connection so the firewall processes your API key cleanly
+                    # Mask the connection so the firewall processes your API key cleanly
                     headers = {
                         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
                     }
                     
                     try:
-                        # We pass the headers variable into the request pipeline here
                         response = requests.get(url, params=params, headers=headers, timeout=10)
                         
                         if response.status_code == 401:
@@ -131,7 +130,6 @@ else:
                             st.error(f"🔴 Spoonacular Server Error: Code {response.status_code}.")
                             st.warning(f"Raw message: {response.text}")
                         else:
-                            # SAFE EXTRACTION CHECK: Only parse if it's structural JSON data
                             try:
                                 data = response.json()
                                 recipes = data.get("results", [])
@@ -139,7 +137,6 @@ else:
                                 st.error("🔴 Server sent back an invalid data format.")
                                 st.warning(f"Message from Spoonacular: {response.text}")
                                 recipes = []
-
                             
                             if recipes:
                                 st.success(f"✨ Found {len(recipes)} amazing matches tailored to your profile!")
@@ -174,7 +171,7 @@ else:
                                         st.markdown("### 📋 Step-by-Step Instructions")
                                         analyzed = recipe.get("analyzedInstructions")
                                         if analyzed and len(analyzed) > 0:
-                                            steps = analyzed[0].get("steps", []) # Fix array targeting profile
+                                            steps = analyzed[0].get("steps", [])
                                             for step in steps:
                                                 st.write(f"**Step {step.get('number')}:** {step.get('step')}")
                                         elif recipe.get("instructions"):
@@ -186,8 +183,8 @@ else:
                                         st.info(f"🛒 **Missing something?** [Instantly order these scaled ingredients for {servings} people via Instacart](https://instacart.com)")
                             else:
                                 st.error("No recipes matched that exact configuration. Try widening your cooking time or filters!")
-                except Exception as e:
-                    st.error(f"Failed to process recipe pipeline data safely. System message: {str(e)}")
+                    except Exception as e:
+                        st.error(f"Failed to process recipe pipeline data safely. System message: {str(e)}")
 
     # =========================================================================
     # 🚗 TAB 2: GO OUT TO EAT (LIVE GOOGLE PLACES API INTEGRATION)
