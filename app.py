@@ -100,7 +100,7 @@ else:
                     st.info("🍳 Searching Spoonacular database for your top 3 ranked options...")
                                         
                     # 🟢 FIX 1: Set correct production API path destination endpoint URL
-                    url = "https://spoonacular.com"
+                    url = "https://api.spoonacular.com/recipes/complexSearch"
                     params = {
                         "apiKey": SPOONACULAR_API_KEY,
                         "query": ingredients,
