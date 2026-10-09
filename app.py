@@ -234,23 +234,24 @@ else:
                                 
                                 for index, res in enumerate(raw_places):
                                     with restaurant_swiper[index]:
-                                        st.subheader(res.get("displayName", {}).get("text", "Local Venue"))
+                                        # Extract the inner text dictionary from the modern nested layout structure
+                                        display_name = res.get("displayName", {}).get("text", "Local Venue")
+                                        st.subheader(display_name)
                                         
                                         address = res.get("formattedAddress", "Address unavailable")
                                         rating = res.get("rating", "No reviews yet")
                                         total_reviews = res.get("userRatingCount", 0)
                                         
-                                    # Decode the new price metrics smoothly
-                                      google_price_tier = res.get("priceLevel", "PRICE_LEVEL_UNSPECIFIED")
-                                      price_symbols = {
-                                          "PRICE_LEVEL_INEXPENSIVE": "$", 
-                                          "PRICE_LEVEL_MODERATE": "$$", 
-                                          "PRICE_LEVEL_EXPENSIVE": "$$$", 
-                                          "PRICE_LEVEL_VERY_EXPENSIVE": "$$$$"
-                                      }
-                                      google_price = price_symbols.get(google_price_tier, "$$")
-
-
+                                        # 🚀 UNIFIED LOGIC BLOCK
+                                        google_price_tier = res.get("priceLevel", "PRICE_LEVEL_UNSPECIFIED")
+                                        price_symbols = {
+                                            "PRICE_LEVEL_INEXPENSIVE": "$", 
+                                            "PRICE_LEVEL_MODERATE": "$$", 
+                                            "PRICE_LEVEL_EXPENSIVE": "$$$", 
+                                            "PRICE_LEVEL_VERY_EXPENSIVE": "$$$$"
+                                        }
+                                        google_price = price_symbols.get(google_price_tier, "$$")
+                                        
                                         st.markdown(f"📍 **Address:** {address}")
                                         st.markdown(f"📊 **Community Rating:** ⭐ {rating} / 5 ({total_reviews} reviews) | 💰 **Price Level:** `{google_price}`")
                                         
