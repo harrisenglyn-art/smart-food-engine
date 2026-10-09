@@ -94,7 +94,9 @@ else:
             else:
                 st.info("🍳 Searching Spoonacular database for your top 3 ranked options...")
                 
+                # 🚀 FIX: Must point to api.spoonacular.com
                 url = "https://spoonacular.com"
+                
                 params = {
                     "apiKey": SPOONACULAR_API_KEY,
                     "query": ingredients,
@@ -103,6 +105,7 @@ else:
                     "fillIngredients": True,  
                     "number": 3               
                 }
+
                 if health_goal != "None":
                     params["diet"] = health_goal.lower().replace(" ", "")
                 if cuisine_cook != "Any":
