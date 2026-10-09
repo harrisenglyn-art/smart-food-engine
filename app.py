@@ -200,54 +200,55 @@ else:
                 if not GOOGLE_KEY:
                     st.error("🔴 Google Places API Key missing! Please add GOOGLE_PLACES_KEY to your Streamlit Cloud Secrets dashboard.")
                 else:
-                    # 🟢 20 SPACES INDENTATION (LINE 204+)
+                    # 1. Google's actual active production endpoint path
+                    google_url = "https://places.googleapis.com/v1/places:searchText"
+                    
+                    # 2. Re-map payload parameters to follow current property metrics
                     query_string = f"{cuisine_go if cuisine_go != 'Any' else ''} {mood_go} restaurant near {user_location}"
                     
-                    budget_map = {"$": 1, "$$": 2, "$$$": 3, "$$$$": 4}
-                    max_price_tier = budget_map.get(budget_go, 2)
+                    payload = {
+                        "textQuery": query_string,
+                        "maxResultCount": 3
+                    }
                     
-                    # 🚀 FIX: The complete, functional endpoint address
-                    google_url = "https://googleapis.com"
-                    
-                    google_params = {
-                        "query": query_string,
-                        "key": GOOGLE_KEY
+                    # 3. Apply the authorization tokens and mandatory FieldMask configuration rules
+                    headers = {
+                        "Content-Type": "application/json",
+                        "X-Goog-Api-Key": GOOGLE_KEY,
+                        "X-Goog-FieldMask": "places.name,places.formattedAddress,places.rating,places.userRatingCount,places.priceLevel,places.currentOpeningHours"
                     }
                     
                     try:
-                        response = requests.get(google_url, params=google_params, timeout=10)
-
+                        # Production calls use POST instead of GET
+                        response = requests.post(google_url, json=payload, headers=headers, timeout=10)
                         
                         if response.status_code == 200:
                             data = response.json()
-                            raw_places = data.get("results", [])
+                            raw_places = data.get("places", []) # Modern system maps data via "places" array
                             
-                            filtered_places = [
-                                place for place in raw_places 
-                                if place.get("price_level", 0) <= max_price_tier
-                            ]
-                            
-                            final_matches = filtered_places[:3]
-                            
-                            if final_matches:
+                            if raw_places:
                                 st.success(f"✨ Found live dining venues matched to your profile!")
                                 
-                                rest_tab_names = [f"📍 Rank #{i+1}: {res.get('name')[:20]}..." for i, res in enumerate(final_matches)]
+                                rest_tab_names = [f"📍 Rank #{i+1}: {res.get('name', 'Restaurant')[:20]}..." for i, res in enumerate(raw_places)]
                                 restaurant_swiper = st.tabs(rest_tab_names)
                                 
-                                for index, res in enumerate(final_matches):
+                                for index, res in enumerate(raw_places):
                                     with restaurant_swiper[index]:
-                                        st.subheader(res.get("name"))
+                                        st.subheader(res.get("displayName", {}).get("text", "Local Venue"))
                                         
-                                        address = res.get("formatted_address", "Address unavailable")
+                                        address = res.get("formattedAddress", "Address unavailable")
                                         rating = res.get("rating", "No reviews yet")
-                                        total_reviews = res.get("user_ratings_total", 0)
-                                        google_price = "\$" * res.get("price_level", 1)
+                                        total_reviews = res.get("userRatingCount", 0)
+                                        
+                                        # Decode the new price metrics smoothly
+                                        google_price_tier = res.get("priceLevel", "PRICE_LEVEL_UNSPECIFIED")
+                                        price_symbols = {"PRICE_LEVEL_INEXPENSIVE": "\(", "PRICE_LEVEL_MODERATE": "\)\(", "PRICE_LEVEL_EXPENSIVE": "\)\[", "PRICE_LEVEL_VERY_EXPENSIVE": "\]\["}                                         google_price = price_symbols.get(google_price_tier, "\]")
                                         
                                         st.markdown(f"📍 **Address:** {address}")
                                         st.markdown(f"📊 **Community Rating:** ⭐ {rating} / 5 ({total_reviews} reviews) | 💰 **Price Level:** `{google_price}`")
                                         
-                                        open_now = res.get("opening_hours", {}).get("open_now")
+                                        # Open/Closed structural evaluation
+                                        open_now = res.get("currentOpeningHours", {}).get("openNow")
                                         if open_now is True:
                                             st.markdown("🟢 **Status:** Open right now! Doors are ready.")
                                         elif open_now is False:
@@ -256,19 +257,17 @@ else:
                                         st.markdown("---")
                                         col_btn1, col_btn2 = st.columns(2)
                                         with col_btn1:
-                                            maps_link = f"https://google.com{res.get('name').replace(' ', '+')}+{address.replace(' ', '+')}"
+                                            # Clean route extraction fallback links
+                                            clean_name = res.get("displayName", {}).get("text", "Restaurant").replace(" ", "+")
+                                            maps_link = f"https://google.com{clean_name}+{address.replace(' ', '+')}"
                                             st.link_button("🗺️ Open in Google Maps", maps_link, type="primary")
                                         with col_btn2:
                                             st.link_button("🚗 Order Delivery via DoorDash", "https://doordash.com")
                             else:
-                                st.error("No open restaurants matched your specific budget or criteria nearby. Try increasing your budget slider or picking 'Any' cuisine!")
+                                st.error("No venues matched your criteria. Try adjustments to your selection filters!")
                         else:
                             st.error(f"🔴 Google API Server Error: Status Code {response.status_code}")
+                            if response.status_code == 403:
+                                st.info("💡 Tip: Ensure 'Places API (New)' status is toggled ON inside your Google Cloud Console Library dashboard.")
                     except Exception as e:
                         st.error(f"Failed to pull live restaurant data safely. System message: {str(e)}")
-
-    # --- NON-INVASIVE ADS STITCHED FOOTER ---
-    st.markdown("---")
-    st.caption("💡 Sponsored: Upgrade your kitchen gear! Check out our partner discounts on non-stick skillets and air fryers.")
-
-   
