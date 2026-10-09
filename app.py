@@ -121,13 +121,16 @@ else:
                             st.error("🔴 Daily Free Limit Reached! Your Spoonacular developer quota transforms automatically at midnight.")
                         elif response.status_code != 200:
                             st.error(f"🔴 Spoonacular Server Error: Code {response.status_code}. Raw message: {response.text}")
+                    
                         else:
                             # 🟢 SAFE EXTRACTION CHECK: Only parse if it's structural JSON data
                             try:
                                 data = response.json()
                                 recipes = data.get("results", [])
                             except ValueError:
-                                st.error("🔴 Server sent back an invalid data format. Please try again in a few moments!")
+                                st.error("🔴 Server sent back an invalid data format.")
+                                # This line reveals the exact issue (e.g., "Daily Quota Exceeded" or "Invalid API Key")
+                                st.warning(f"Message from Spoonacular: {response.text}")
                                 recipes = []
                             
                             if recipes:
