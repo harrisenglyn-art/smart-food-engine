@@ -99,7 +99,7 @@ else:
                     st.error("🔴 Connection Aborted: Your Spoonacular API Key is completely missing or unconfigured! Please add 'SPOONACULAR_KEY' to your Streamlit Secrets panel.")
                 else:
                     st.info("🍳 Searching Spoonacular database for your top 3 ranked options...")
-                    
+                                        
                     url = "https://spoonacular.com"
                     params = {
                         "apiKey": SPOONACULAR_API_KEY,
@@ -109,37 +109,37 @@ else:
                         "fillIngredients": True,  
                         "number": 3               
                     }
-
-
-                if health_goal != "None":
-                    params["diet"] = health_goal.lower().replace(" ", "")
-                if cuisine_cook != "Any":
-                    params["cuisine"] = cuisine_cook.lower()
+                    if health_goal != "None":
+                        params["diet"] = health_goal.lower().replace(" ", "")
+                    if cuisine_cook != "Any":
+                        params["cuisine"] = cuisine_cook.lower()
+                        
+                    # 🚀 FIX: Mask the connection so the firewall processes your API key cleanly
+                    headers = {
+                        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+                    }
                     
-                try:
-                    # Clear out the key message check
-                    if not SPOONACULAR_API_KEY:
-                        st.error("🔴 Spoonacular API Key missing! Please add SPOONACULAR_KEY to your Streamlit Cloud Secrets dashboard.")
-                    else:
-                        response = requests.get(url, params=params, timeout=10)
+                    try:
+                        # We pass the headers variable into the request pipeline here
+                        response = requests.get(url, params=params, headers=headers, timeout=10)
                         
                         if response.status_code == 401:
                             st.error("🔴 API Key Authorization Failed. Please check your key characters inside your Secrets dashboard!")
                         elif response.status_code == 402:
                             st.error("🔴 Daily Free Limit Reached! Your Spoonacular developer quota transforms automatically at midnight.")
                         elif response.status_code != 200:
-                            st.error(f"🔴 Spoonacular Server Error: Code {response.status_code}. Raw message: {response.text}")
-                    
+                            st.error(f"🔴 Spoonacular Server Error: Code {response.status_code}.")
+                            st.warning(f"Raw message: {response.text}")
                         else:
-                            # 🟢 SAFE EXTRACTION CHECK: Only parse if it's structural JSON data
+                            # SAFE EXTRACTION CHECK: Only parse if it's structural JSON data
                             try:
                                 data = response.json()
                                 recipes = data.get("results", [])
                             except ValueError:
                                 st.error("🔴 Server sent back an invalid data format.")
-                                # This line reveals the exact issue (e.g., "Daily Quota Exceeded" or "Invalid API Key")
                                 st.warning(f"Message from Spoonacular: {response.text}")
                                 recipes = []
+
                             
                             if recipes:
                                 st.success(f"✨ Found {len(recipes)} amazing matches tailored to your profile!")
