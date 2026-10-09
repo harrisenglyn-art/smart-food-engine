@@ -173,14 +173,13 @@ else:
     # =========================================================================
     # 🚗 TAB 2: GO OUT TO EAT (LIVE GOOGLE PLACES API INTEGRATION)
     # =========================================================================
-    with tab_go_out:
+        with tab_go_out:
         st.header("Find Local Restaurants Nearby")
         st.write("Don't want to clean dishes? Tell us your vibe and locate the best local dining spots.")
         
         user_location = st.text_input("Enter your current City or Zip Code:", placeholder="e.g., Los Angeles, CA", key="loc_go")
         
         col1_go, col2_go = st.columns(2)
-    
         with col1_go:
             cuisine_go = st.selectbox("What Cuisine do you want?", ["Any", "Italian", "Mexican", "Asian", "Burgers/American", "Thai", "Sushi"], key="c_go")
             mood_go = st.selectbox("What is your current vibe?", ["Casual Dining", "Date Night", "Late Night Cravings", "Fast & Trendy"], key="m_go")
