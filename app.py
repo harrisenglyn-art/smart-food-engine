@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 
 # --- CONFIGURATION ---
-API_KEY = "d1a32c1d8fb42388712a2d829f784a1e62a7e474"
+API_KEY = "7105ecd82df44f4dad7892869da129a2"
 
 st.set_page_config(page_title="Smart Chef", page_icon="🍳", layout="centered")
 
