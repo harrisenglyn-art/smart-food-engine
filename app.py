@@ -2,7 +2,8 @@ import streamlit as st
 import requests
 
 # --- CONFIGURATION ---
-API_KEY = "7105ecd82df44f4dad7892869da129a2"
+# TODO: REPLACE THIS WITH YOUR REAL, ACTUAL 32-CHARACTER SPOONACULAR KEY!
+API_KEY = "9023d1a591b544889df6a7c364cfb898"
 
 st.set_page_config(page_title="Smart Chef", page_icon="🍳", layout="centered")
 
@@ -33,64 +34,57 @@ if st.button("Generate My Perfect Recipe", type="primary"):
     else:
         st.info("🍳 Searching Spoonacular database for matches...")
         
-        # 1. Structure the API Request URL
         url = "https://spoonacular.com"
-        
-        # 2. Pass user inputs directly into Spoonacular's filter parameters
         params = {
             "apiKey": API_KEY,
             "includeIngredients": ingredients,
             "maxReadyTime": max_time,
-            "addRecipeInformation": True,  # Gives us full cooking instructions
-            "number": 1                    # Bring back the single best match
+            "addRecipeInformation": True,  
+            "number": 1                    
         }
         
-        # Apply health filters if selected
         if health_goal != "None":
             params["diet"] = health_goal.lower().replace(" ", "")
         if cuisine != "Any":
             params["cuisine"] = cuisine.lower()
 
-        # 3. Fetch the data live from their servers
         try:
             response = requests.get(url, params=params)
-            data = response.json()
             
-            if data.get("results"):
-                # FIX: Explicitly target the first item [0] inside the results list
-                recipe = data["results"][0]  
-                
-                st.success("✨ Found a match!")
-                st.header(recipe["title"])
-                
-                # Display Recipe Image
-                if "image" in recipe:
-                    st.image(recipe["image"])
-                
-                # Summary and Specs
-                st.markdown(f"⏱️ **Ready in:** {recipe['readyInMinutes']} minutes")
-                st.markdown(f"🍽️ **Base Servings:** {recipe['servings']} | **Target Servings Requested:** {servings}")
-                
-                # Instruction Steps
-                st.markdown("### 📋 Step-by-Step Instructions")
-                if recipe.get("analyzedInstructions"):
-                    steps = recipe["analyzedInstructions"][0]["steps"]
-                    for step in steps:
-                        st.write(f"**Step {step['number']}:** {step['step']}")
-                else:
-                    st.write("Please check the full recipe link for direct instructions.")
-                
-                # --- AFFILIATE & PREMIUM MONETIZATION CARDS ---
-                st.markdown("---")
-                st.info(f"🛒 **Need groceries?** [Order ingredients scaled for {servings} people via Instacart](https://instacart.com)")
-                st.caption("🔒 *Want to unlock nutritional macros (Protein/Carbs) for this meal? [Upgrade to Premium for $2.99/mo](#)*")
-                
+            # --- DEBUG BLOCK: Let's see exactly what Spoonacular is saying ---
+            if response.status_code != 200:
+                st.error(f"🔴 API Server Error! Status Code: {response.status_code}")
+                st.warning(f"Server Message: {response.text}")
             else:
-                st.error("No recipes found matching those ingredients and filters. Try widening your cooking time or changing filters.")
-                
+                data = response.json()
+                if data.get("results"):
+                    recipe = data["results"][0]  
+                    
+                    st.success("✨ Found a match!")
+                    st.header(recipe["title"])
+                    
+                    if "image" in recipe:
+                        st.image(recipe["image"])
+                    
+                    st.markdown(f"⏱️ **Ready in:** {recipe['readyInMinutes']} minutes")
+                    st.markdown(f"🍽️ **Base Servings:** {recipe['servings']} | **Target Servings Requested:** {servings}")
+                    
+                    st.markdown("### 📋 Step-by-Step Instructions")
+                    if recipe.get("analyzedInstructions") and len(recipe["analyzedInstructions"]) > 0:
+                        steps = recipe["analyzedInstructions"][0]["steps"]
+                        for step in steps:
+                            st.write(f"**Step {step['number']}:** {step['step']}")
+                    else:
+                        st.write("Please check the full recipe link for direct instructions.")
+                    
+                    st.markdown("---")
+                    st.info(f"🛒 **Need groceries?** [Order ingredients scaled for {servings} people via Instacart](https://instacart.com)")
+                    st.caption("🔒 *Want to unlock nutritional macros (Protein/Carbs) for this meal? [Upgrade to Premium for $2.99/mo](#)*")
+                else:
+                    st.error("No recipes found matching those ingredients and filters. Try widening your cooking time or changing filters.")
+                    
         except Exception as e:
-            st.error("Failed to parse data or connect to the server. Double check your API configuration or filters!")
+            st.error(f"Failed to compile layout. System error message: {str(e)}")
 
-# --- DISPLAY AD REVENUE ELEMENT ---
 st.markdown("---")
 st.caption("💡 Advertisement: Support our free tier by checking out our cooking gear sponsors!")
