@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 
 # --- CONFIGURATION ---
-SPOONACULAR_API_KEY = "d1a32c1d8fb42388712a2d829f784a1e62a7e474"
+SPOONACULAR_API_KEY = "9023d1a591b544889df6a7c364cfb898"
 
 st.set_page_config(page_title="Smart Food Engine", page_icon="🍔", layout="centered")
 
