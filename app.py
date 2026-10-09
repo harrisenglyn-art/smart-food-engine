@@ -58,7 +58,7 @@ if st.button("Generate My Perfect Recipe", type="primary"):
             data = response.json()
             
             if data.get("results"):
-                recipe = data["results"][0]  # Get the first matching recipe object
+                recipe = data["results"][0]  # Grab the first actual recipe from the matching list
                 
                 st.success("✨ Found a match!")
                 st.header(recipe["title"])
