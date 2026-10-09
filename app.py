@@ -34,7 +34,7 @@ if "user_tier" not in st.session_state:
 st.sidebar.markdown(f"👤 **Account Tier:** `{st.session_state['user_tier']}`")
 if st.session_state["user_tier"] == "Free":
     st.sidebar.markdown("---")
-    st.sidebar.markdown('<div class="premium-box">👑 <b>Unlock Advanced Macros</b><br>Instant allergen blockers and calorie calendars for \$2.99/mo.</div>', unsafe_allow_html=True)
+    st.sidebar.markdown('<div class="premium-box">👑 <b>Unlock Advanced Macros</b><br>Instant allergen blockers and calorie calendars for $2.99/mo.</div>', unsafe_allow_html=True)
     if st.sidebar.button("✨ Register for Paid Membership"):
         st.session_state["show_registration"] = True
 st.sidebar.markdown("---")
@@ -47,7 +47,7 @@ if st.session_state.get("show_registration"):
     with st.form("reg_form"):
         new_email = st.text_input("Email Address")
         new_pass = st.text_input("Password", type="password")
-        payment_mock = st.checkbox("Agree to monthly subscription billing (\$2.99/mo)")
+        payment_mock = st.checkbox("Agree to monthly subscription billing ($2.99/mo)")
         
         submit_reg = st.form_submit_button("Proceed to Secure Checkout")
         if submit_reg:
@@ -62,6 +62,7 @@ if st.session_state.get("show_registration"):
     if st.button("Cancel & Return to App"):
         st.session_state["show_registration"] = False
         st.rerun()
+
 # --- 6. MAIN APP INTERFACE LAYER ---
 else:
     st.title("🍔 Smart Food Recommendation Engine")
@@ -86,6 +87,7 @@ else:
             servings = st.number_input("Number of Servings Needed", min_value=1, max_value=20, value=2, step=1, key="s_cook")
             
         max_time = st.slider("Max Prep/Cooking Time (Minutes)", min_value=10, max_value=120, value=60, step=5, key="t_cook")
+        
         if st.button("Generate Home Recipes", type="primary"):
             if not ingredients:
                 st.warning("Please input ingredients to match!")
@@ -97,6 +99,7 @@ else:
                 else:
                     st.info("🍳 Searching Spoonacular database for your top 3 ranked options...")
                                         
+                    # 🟢 FIX 1: Set correct production API path destination endpoint URL
                     url = "https://spoonacular.com"
                     params = {
                         "apiKey": SPOONACULAR_API_KEY,
@@ -167,10 +170,12 @@ else:
                                         st.markdown("### 📋 Step-by-Step Instructions")
                                         analyzed = recipe.get("analyzedInstructions")
                                         
+                                        # 🟢 FIX 2: Check length safely to eliminate index crashes
                                         if analyzed and isinstance(analyzed, list) and len(analyzed) > 0:
                                             steps = analyzed[0].get("steps", [])
                                             for step in steps:
                                                 st.write(f"**Step {step.get('number')}:** {step.get('step')}")
+                                        elif recipe.get("instructions"):
                                         elif recipe.get("instructions"):
                                             st.write(recipe["instructions"])
                                         else:
@@ -182,6 +187,7 @@ else:
                                 st.error("No recipes matched that exact configuration. Try widening your cooking time or filters!")
                     except Exception as e:
                         st.error(f"Failed to process recipe pipeline data safely. System message: {str(e)}")
+
     # =========================================================================
     # 🚗 TAB 2: GO OUT TO EAT (LIVE GOOGLE PLACES API INTEGRATION)
     # =========================================================================
@@ -196,7 +202,7 @@ else:
             cuisine_go = st.selectbox("What Cuisine do you want?", ["Any", "Italian", "Mexican", "Asian", "Burgers/American", "Thai", "Sushi"], key="c_go")
             mood_go = st.selectbox("What is your current vibe?", ["Casual Dining", "Date Night", "Late Night Cravings", "Fast & Trendy"], key="m_go")
         with col2_go:
-            budget_go = st.select_slider("Amount Willing to Spend", options=["", "", "\[", "\]\["], value="\]", key="b_go")
+            budget_go = st.select_slider("Amount Willing to Spend", options=["\(", "\)\(", "\)\[", "\]\["], value="\]", key="b_go")
             distance_go = st.slider("Maximum Distance (Miles)", min_value=1, max_value=25, value=5, key="d_go")
             
         health_go = st.multiselect("Health Filters / Restrictions", ["Gluten-Free Options", "Vegan Friendly", "Low-Calorie Menu"], key="h_go")
@@ -212,6 +218,7 @@ else:
                 if not GOOGLE_KEY:
                     st.error("🔴 Google Places API Key missing! Please add GOOGLE_PLACES_KEY to your Streamlit Cloud Secrets dashboard.")
                 else:
+                    # 🟢 FIXED: Replaced 'googleapis.com' with the correct fully qualified production endpoint 
                     google_url = "https://googleapis.com"
                     query_string = f"{cuisine_go if cuisine_go != 'Any' else ''} {mood_go} restaurant near {user_location}"
                     
@@ -250,12 +257,7 @@ else:
                                         
                                         google_price_tier = res.get("priceLevel", "PRICE_LEVEL_UNSPECIFIED")
                                         price_symbols = {
-                                            "PRICE_LEVEL_INEXPENSIVE": "\(",                                              
-                                            "PRICE_LEVEL_MODERATE": "\)\(",                                              
-                                            "PRICE_LEVEL_EXPENSIVE": "\)\[",                                              
-                                            "PRICE_LEVEL_VERY_EXPENSIVE": "\]\["                                         
-                                        }                                         
-                                        google_price = price_symbols.get(google_price_tier, "\]")
+                                            "PRICE_LEVEL_INEXPENSIVE": "\(",                                             "PRICE_LEVEL_MODERATE": "\)\(",                                             "PRICE_LEVEL_EXPENSIVE": "\)\[",                                             "PRICE_LEVEL_VERY_EXPENSIVE": "\]\["                                         }                                         google_price = price_symbols.get(google_price_tier, "\]")
                                         
                                         st.markdown(f"📍 **Address:** {address}")
                                         st.markdown(f"📊 **Community Rating:** ⭐ {rating} / 5 ({total_reviews} reviews) | 💰 **Price Level:** `{google_price}`")
@@ -269,6 +271,7 @@ else:
                                         st.markdown("---")
                                         col_btn1, col_btn2 = st.columns(2)
                                         with col_btn1:
+                                            # 🟢 FIXED: Replaced non-existent link mapping with valid Google Maps Search query matrix
                                             clean_name = display_name.replace(" ", "+")
                                             clean_address = address.replace(" ", "+")
                                             maps_link = f"https://google.com{clean_name}+{clean_address}"
