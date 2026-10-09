@@ -18,7 +18,7 @@ st.write("Solve your daily food dilemma instantly. Tell us what you're craving!"
 tab_cook, tab_go_out = st.tabs(["🍳 Cook at Home", "🚗 Go Out to Eat"])
 
 # =========================================================================
-# 🍳 TAB 1: COOK AT HOME (WITH INGREDIENT CALCULATION SCALING & TOP 3 RANKED SELECTION)
+# 🍳 TAB 1: COOK AT HOME
 # =========================================================================
 with tab_cook:
     st.header("Cook a Perfect Meal")
@@ -40,14 +40,14 @@ with tab_cook:
         else:
             st.info("🍳 Searching Spoonacular database for your top 3 ranked options...")
             
-            url = "https://spoonacular.com"
+            url = "https://api.spoonacular.com/recipes/complexSearch"
             params = {
                 "apiKey": SPOONACULAR_API_KEY,
                 "query": ingredients,
                 "maxReadyTime": max_time,
                 "addRecipeInformation": True,
-                "fillIngredients": True,  # Required to get raw ingredient weights for calculations
-                "number": 3               # Request top 3 options
+                "fillIngredients": True,  
+                "number": 3               
             }
             if health_goal != "None":
                 params["diet"] = health_goal.lower().replace(" ", "")
@@ -55,16 +55,26 @@ with tab_cook:
                 params["cuisine"] = cuisine_cook.lower()
                 
             try:
-                response = requests.get(url, params=params)
-                if response.status_code == 200:
+                # Use a custom timeout to prevent the pipeline from hanging
+                response = requests.get(url, params=params, timeout=10)
+                
+                # --- DEFENSIVE SERVER CHECKS ---
+                if response.status_code == 401:
+                    st.error("🔴 API Key Authorization Failed. Please check that your key was copied correctly on line 5 without hidden characters!")
+                elif response.status_code == 402:
+                    st.error("🔴 Daily Free Limit Reached! Your Spoonacular developer points quota has reset limits. Credits automatically refresh at midnight.")
+                    st.info("💡 Note: This confirms your code is perfectly connected! Spoonacular's free tier has a set daily allowance.")
+                elif response.status_code != 200:
+                    st.error(f"🔴 Spoonacular Server Error: Code {response.status_code}. Try removing some filters.")
+                else:
+                    # Only parse JSON if the status is exactly 200 OK
                     data = response.json()
                     recipes = data.get("results", [])
                     
                     if recipes:
                         st.success(f"✨ Found {len(recipes)} amazing matches tailored to your profile!")
                         
-                        # --- OUTPUT SWIPER/SLIDER TABS FOR TOP 3 RESULTS ---
-                        recipe_tab_names = [f"🏆 Rank #{i+1}: {r.get('title')[:30]}..." for i, r in enumerate(recipes)]
+                        recipe_tab_names = [f"🏆 Rank #{i+1}: {r.get('title')[:25]}..." for i, r in enumerate(recipes)]
                         swiper_tabs = st.tabs(recipe_tab_names)
                         
                         for index, recipe in enumerate(recipes):
@@ -77,7 +87,7 @@ with tab_cook:
                                 ready_in = recipe.get("readyInMinutes", max_time)
                                 st.markdown(f"⏱️ **Ready in:** {ready_in} mins | 🍽️ **Base Servings:** {base_servings} ➔ **Your Scaled Request:** {servings} servings")
                                 
-                                # --- MATH SCALING LOOP ENGINE (OPTION B) ---
+                                # --- MATH SCALING LOOP ENGINE ---
                                 st.markdown("### 🛒 Scaled Ingredients List")
                                 scale_multiplier = float(servings) / float(base_servings)
                                 
@@ -90,13 +100,13 @@ with tab_cook:
                                         name = ing.get("name", "")
                                         st.write(f"• **{scaled_amount:.2f} {unit}** of {name}")
                                 else:
-                                    st.write("Refer to the directions below for raw ingredient items.")
+                                    st.write("Refer to directions below for items.")
                                     
-                                # --- DIRECTIONS PARSER ---
                                 st.markdown("### 📋 Step-by-Step Instructions")
                                 analyzed = recipe.get("analyzedInstructions")
                                 if analyzed and len(analyzed) > 0:
-                                    steps = analyzed[0].get("steps", [])
+                                    # Target steps list safely
+                                    steps = recipe["analyzedInstructions"][0].get("steps", [])
                                     for step in steps:
                                         st.write(f"**Step {step.get('number')}:** {step.get('step')}")
                                 elif recipe.get("instructions"):
@@ -104,18 +114,15 @@ with tab_cook:
                                 else:
                                     st.write("Mix ingredients well and cook thoroughly according to taste!")
                                     
-                                # --- MONETIZATION CONTEXT CARDS ---
                                 st.markdown("---")
                                 st.info(f"🛒 **Missing something?** [Instantly order these scaled ingredients for {servings} people via Instacart](https://instacart.com)")
                     else:
                         st.error("No recipes matched that exact configuration. Try widening your cooking time or filters!")
-                else:
-                    st.error(f"Spoonacular server error status code: {response.status_code}")
             except Exception as e:
-                st.error(f"Failed to process recipe pipeline: {str(e)}")
+                st.error(f"Failed to process recipe pipeline data safely. System message: {str(e)}")
 
 # =========================================================================
-# 🚗 TAB 2: GO OUT TO EAT (OPTION A LOCAL RESTAURANT LOOKUP ENGINE)
+# 🚗 TAB 2: GO OUT TO EAT
 # =========================================================================
 with tab_go_out:
     st.header("Find Local Restaurants Nearby")
@@ -134,21 +141,18 @@ with tab_go_out:
     if st.button("Locate Nearby Restaurants", type="primary"):
         st.info(f"🚗 Geolocation engine mapping local {cuisine_go} spots matching budget {budget_go}...")
         
-        # Mock restaurant array representing geographical feedback loop (maps directly to API schemas)
         mock_restaurants = [
             {"name": "The Golden Dragon Kitchen", "cuisine": "Asian", "distance": "1.4 miles away", "rating": "⭐ 4.8 / 5", "highlight": "Great for Quick & Easy comfort cravings!"},
             {"name": "Bella Italia Trattoria", "cuisine": "Italian", "distance": "2.9 miles away", "rating": "⭐ 4.6 / 5", "highlight": "Perfect romantic match for your Cozy Date Night vibe!"},
             {"name": "Taco Fiesta Cantina", "cuisine": "Mexican", "distance": "4.2 miles away", "rating": "⭐ 4.7 / 5", "highlight": "Fits your budget profile perfectly!"}
         ]
         
-        # Filter matching logic simulation
         matches = [r for r in mock_restaurants if cuisine_go == "Any" or r["cuisine"].lower() in cuisine_go.lower()]
         if not matches:
-            matches = mock_restaurants  # Fallback to display valid mock data structure if no direct match
+            matches = mock_restaurants  
             
         st.success(f"✨ Ranked top local dining venues near your location:")
         
-        # --- SWIPER TABS FOR TOP 3 RESTAURANTS ---
         rest_tab_names = [f"📍 Rank #{i+1}: {res['name']}" for i, res in enumerate(matches[:3])]
         restaurant_swiper = st.tabs(rest_tab_names)
         
@@ -157,7 +161,6 @@ with tab_go_out:
                 st.subheader(res["name"])
                 st.markdown(f"🛣️ **Distance:** {res['distance']} | 📊 **Community Rating:** {res['rating']}")
                 st.markdown(f"💡 **Why you'll love it:** {res['highlight']}")
-                st.write(f"**Budget Profile:** Max {budget_go} requirement satisfied.")
                 
     
                 # --- GO OUT TO EAT MONETIZATION PAYDAYS ---
