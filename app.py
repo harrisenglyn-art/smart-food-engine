@@ -92,19 +92,24 @@ else:
             if not ingredients:
                 st.warning("Please input ingredients to match!")
             else:
-                st.info("🍳 Searching Spoonacular database for your top 3 ranked options...")
+                # Retrieve the key securely inside the click operation block
+                SPOONACULAR_API_KEY = st.secrets.get("SPOONACULAR_KEY", "").strip()
                 
-                # 🚀 FIX: Must point to api.spoonacular.com
-                url = "https://spoonacular.com"
-                
-                params = {
-                    "apiKey": SPOONACULAR_API_KEY,
-                    "query": ingredients,
-                    "maxReadyTime": max_time,
-                    "addRecipeInformation": True,
-                    "fillIngredients": True,  
-                    "number": 3               
-                }
+                if not SPOONACULAR_API_KEY or SPOONACULAR_API_KEY == "PASTE_YOUR_ACTIVE_SPOONACULAR_KEY_HERE":
+                    st.error("🔴 Connection Aborted: Your Spoonacular API Key is completely missing or unconfigured! Please add 'SPOONACULAR_KEY' to your Streamlit Secrets panel.")
+                else:
+                    st.info("🍳 Searching Spoonacular database for your top 3 ranked options...")
+                    
+                    url = "https://spoonacular.com"
+                    params = {
+                        "apiKey": SPOONACULAR_API_KEY,
+                        "query": ingredients,
+                        "maxReadyTime": max_time,
+                        "addRecipeInformation": True,
+                        "fillIngredients": True,  
+                        "number": 3               
+                    }
+
 
                 if health_goal != "None":
                     params["diet"] = health_goal.lower().replace(" ", "")
