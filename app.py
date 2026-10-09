@@ -169,11 +169,10 @@ else:
                             st.error("No recipes matched that exact configuration. Try widening your cooking time or filters!")
                 except Exception as e:
                     st.error(f"Failed to process recipe pipeline data safely. System message: {str(e)}")
-
     # =========================================================================
     # 🚗 TAB 2: GO OUT TO EAT (LIVE GOOGLE PLACES API INTEGRATION)
     # =========================================================================
-        with tab_go_out:
+    with tab_go_out:
         st.header("Find Local Restaurants Nearby")
         st.write("Don't want to clean dishes? Tell us your vibe and locate the best local dining spots.")
         
@@ -266,3 +265,5 @@ else:
     # --- NON-INVASIVE ADS STITCHED FOOTER ---
     st.markdown("---")
     st.caption("💡 Sponsored: Upgrade your kitchen gear! Check out our partner discounts on non-stick skillets and air fryers.")
+
+   
