@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 
 # --- 1. CONFIGURATION & ENCRYPTED KEYS ---
-SPOONACULAR_API_KEY = "9023d1a591b544889df6a7c364cfb898"
+SPOONACULAR_API_KEY = st.secrets.get("SPOONACULAR_KEY", "")
 
 st.set_page_config(page_title="Smart Food Engine", page_icon="🍔", layout="centered")
 
@@ -109,66 +109,75 @@ else:
                     params["cuisine"] = cuisine_cook.lower()
                     
                 try:
-                    response = requests.get(url, params=params, timeout=10)
-                    
-                    if response.status_code == 401:
-                        st.error("🔴 API Key Authorization Failed. Please check your key characters inside the code!")
-                    elif response.status_code == 402:
-                        st.error("🔴 Daily Free Limit Reached! Your Spoonacular developer quota transforms automatically at midnight.")
-                    elif response.status_code != 200:
-                        st.error(f"🔴 Spoonacular Server Error: Code {response.status_code}. Try removing some filters.")
+                    # Clear out the key message check
+                    if not SPOONACULAR_API_KEY:
+                        st.error("🔴 Spoonacular API Key missing! Please add SPOONACULAR_KEY to your Streamlit Cloud Secrets dashboard.")
                     else:
-                        data = response.json()
-                        recipes = data.get("results", [])
+                        response = requests.get(url, params=params, timeout=10)
                         
-                        if recipes:
-                            st.success(f"✨ Found {len(recipes)} amazing matches tailored to your profile!")
-                            
-                            recipe_tab_names = [f"🏆 Rank #{i+1}: {r.get('title')[:25]}..." for i, r in enumerate(recipes)]
-                            swiper_tabs = st.tabs(recipe_tab_names)
-                            
-                            for index, recipe in enumerate(recipes):
-                                with swiper_tabs[index]:
-                                    st.subheader(recipe.get("title"))
-                                    if recipe.get("image"):
-                                        st.image(recipe["image"])
-                                        
-                                    base_servings = recipe.get("servings", 1)
-                                    ready_in = recipe.get("readyInMinutes", max_time)
-                                    st.markdown(f"⏱️ **Ready in:** {ready_in} mins | 🍽️ **Base Servings:** {base_servings} ➔ **Your Scaled Request:** {servings} servings")
-                                    
-                                    # --- MATH SCALING LOOP ENGINE ---
-                                    st.markdown("### 🛒 Scaled Ingredients List")
-                                    scale_multiplier = float(servings) / float(base_servings)
-                                    
-                                    extended_ingredients = recipe.get("extendedIngredients", [])
-                                    if extended_ingredients:
-                                        for ing in extended_ingredients:
-                                            base_amount = ing.get("amount", 0.0)
-                                            scaled_amount = base_amount * scale_multiplier
-                                            unit = ing.get("unit", "")
-                                            name = ing.get("name", "")
-                                            st.write(f"• **{scaled_amount:.2f} {unit}** of {name}")
-                                    else:
-                                        st.write("Refer to directions below for items.")
-                                        
-                                    st.markdown("### 📋 Step-by-Step Instructions")
-                                    analyzed = recipe.get("analyzedInstructions")
-                                    if analyzed and len(analyzed) > 0:
-                                        steps = analyzed[0].get("steps", [])
-                                        for step in steps:
-                                            st.write(f"**Step {step.get('number')}:** {step.get('step')}")
-                                    elif recipe.get("instructions"):
-                                        st.write(recipe["instructions"])
-                                    else:
-                                        st.write("Mix ingredients well and cook thoroughly according to taste!")
-                                        
-                                    st.markdown("---")
-                                    st.info(f"🛒 **Missing something?** [Instantly order these scaled ingredients for {servings} people via Instacart](https://instacart.com)")
+                        if response.status_code == 401:
+                            st.error("🔴 API Key Authorization Failed. Please check your key characters inside your Secrets dashboard!")
+                        elif response.status_code == 402:
+                            st.error("🔴 Daily Free Limit Reached! Your Spoonacular developer quota transforms automatically at midnight.")
+                        elif response.status_code != 200:
+                            st.error(f"🔴 Spoonacular Server Error: Code {response.status_code}. Raw message: {response.text}")
                         else:
-                            st.error("No recipes matched that exact configuration. Try widening your cooking time or filters!")
+                            # 🟢 SAFE EXTRACTION CHECK: Only parse if it's structural JSON data
+                            try:
+                                data = response.json()
+                                recipes = data.get("results", [])
+                            except ValueError:
+                                st.error("🔴 Server sent back an invalid data format. Please try again in a few moments!")
+                                recipes = []
+                            
+                            if recipes:
+                                st.success(f"✨ Found {len(recipes)} amazing matches tailored to your profile!")
+                                
+                                recipe_tab_names = [f"🏆 Rank #{i+1}: {r.get('title')[:25]}..." for i, r in enumerate(recipes)]
+                                swiper_tabs = st.tabs(recipe_tab_names)
+                                
+                                for index, recipe in enumerate(recipes):
+                                    with swiper_tabs[index]:
+                                        st.subheader(recipe.get("title"))
+                                        if recipe.get("image"):
+                                            st.image(recipe["image"])
+                                            
+                                        base_servings = recipe.get("servings", 1)
+                                        ready_in = recipe.get("readyInMinutes", max_time)
+                                        st.markdown(f"⏱️ **Ready in:** {ready_in} mins | 🍽️ **Base Servings:** {base_servings} ➔ **Your Scaled Request:** {servings} servings")
+                                        
+                                        st.markdown("### 🛒 Scaled Ingredients List")
+                                        scale_multiplier = float(servings) / float(base_servings)
+                                        
+                                        extended_ingredients = recipe.get("extendedIngredients", [])
+                                        if extended_ingredients:
+                                            for ing in extended_ingredients:
+                                                base_amount = ing.get("amount", 0.0)
+                                                scaled_amount = base_amount * scale_multiplier
+                                                unit = ing.get("unit", "")
+                                                name = ing.get("name", "")
+                                                st.write(f"• **{scaled_amount:.2f} {unit}** of {name}")
+                                        else:
+                                            st.write("Refer to directions below for items.")
+                                            
+                                        st.markdown("### 📋 Step-by-Step Instructions")
+                                        analyzed = recipe.get("analyzedInstructions")
+                                        if analyzed and len(analyzed) > 0:
+                                            steps = analyzed[0].get("steps", []) # Fix array targeting profile
+                                            for step in steps:
+                                                st.write(f"**Step {step.get('number')}:** {step.get('step')}")
+                                        elif recipe.get("instructions"):
+                                            st.write(recipe["instructions"])
+                                        else:
+                                            st.write("Mix ingredients well and cook thoroughly according to taste!")
+                                            
+                                        st.markdown("---")
+                                        st.info(f"🛒 **Missing something?** [Instantly order these scaled ingredients for {servings} people via Instacart](https://instacart.com)")
+                            else:
+                                st.error("No recipes matched that exact configuration. Try widening your cooking time or filters!")
                 except Exception as e:
                     st.error(f"Failed to process recipe pipeline data safely. System message: {str(e)}")
+
     # =========================================================================
     # 🚗 TAB 2: GO OUT TO EAT (LIVE GOOGLE PLACES API INTEGRATION)
     # =========================================================================
