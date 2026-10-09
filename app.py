@@ -218,7 +218,7 @@ else:
                     st.error("🔴 Google Places API Key missing! Please add GOOGLE_PLACES_KEY to your Streamlit Cloud Secrets dashboard.")
                 else:
                     # 🟢 FIXED: Replaced 'googleapis.com' with the correct fully qualified production endpoint 
-                    google_url = "https://googleapis.com"
+                    google_url = "https://places.googleapis.com/v1/places:searchText"
                     query_string = f"{cuisine_go if cuisine_go != 'Any' else ''} {mood_go} restaurant near {user_location}"
                     
                     payload = {
