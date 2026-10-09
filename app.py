@@ -2,7 +2,6 @@ import streamlit as st
 import requests
 
 # --- CONFIGURATION ---
-# TODO: Paste your actual Spoonacular API key inside the quotes below!
 API_KEY = "d1a32c1d8fb42388712a2d829f784a1e62a7e474"
 
 st.set_page_config(page_title="Smart Chef", page_icon="🍳", layout="centered")
@@ -58,7 +57,8 @@ if st.button("Generate My Perfect Recipe", type="primary"):
             data = response.json()
             
             if data.get("results"):
-                recipe = data["results"][0]  # Grab the first actual recipe from the matching list
+                # FIX: Explicitly target the first item [0] inside the results list
+                recipe = data["results"][0]  
                 
                 st.success("✨ Found a match!")
                 st.header(recipe["title"])
@@ -89,7 +89,7 @@ if st.button("Generate My Perfect Recipe", type="primary"):
                 st.error("No recipes found matching those ingredients and filters. Try widening your cooking time or changing filters.")
                 
         except Exception as e:
-            st.error("Failed to connect to the data server. Double check your API key!")
+            st.error("Failed to parse data or connect to the server. Double check your API configuration or filters!")
 
 # --- DISPLAY AD REVENUE ELEMENT ---
 st.markdown("---")
