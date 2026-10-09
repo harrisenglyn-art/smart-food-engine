@@ -211,11 +211,11 @@ else:
                         "maxResultCount": 3
                     }
                     
-                    # 3. Apply the authorization tokens and mandatory FieldMask configuration rules
+                    # 1. Update the headers with the explicit request for places.displayName
                     headers = {
                         "Content-Type": "application/json",
                         "X-Goog-Api-Key": GOOGLE_KEY,
-                        "X-Goog-FieldMask": "places.name,places.formattedAddress,places.rating,places.userRatingCount,places.priceLevel,places.currentOpeningHours"
+                        "X-Goog-FieldMask": "places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.priceLevel,places.currentOpeningHours"
                     }
                     
                     try:
@@ -224,18 +224,18 @@ else:
                         
                         if response.status_code == 200:
                             data = response.json()
-                            raw_places = data.get("places", []) # Modern system maps data via "places" array
+                            raw_places = data.get("places", [])
                             
                             if raw_places:
                                 st.success(f"✨ Found live dining venues matched to your profile!")
                                 
-                                # 🟢 FIX: Extract the human-readable text title for the tab headers
+                                # Extract the human-readable text title for the tab headers safely
                                 rest_tab_names = [f"📍 Rank #{i+1}: {res.get('displayName', {}).get('text', 'Restaurant')[:15]}..." for i, res in enumerate(raw_places)]
                                 restaurant_swiper = st.tabs(rest_tab_names)
                                 
                                 for index, res in enumerate(raw_places):
                                     with restaurant_swiper[index]:
-                                        # 🟢 FIX: Extract the human-readable text title for the card header
+                                        # Pull the actual name field now provided by our mask update
                                         display_name = res.get("displayName", {}).get("text", "Local Venue")
                                         st.subheader(display_name)
                                         
@@ -243,6 +243,7 @@ else:
                                         rating = res.get("rating", "No reviews yet")
                                         total_reviews = res.get("userRatingCount", 0)
                                         
+                                        # Decode the new price metrics smoothly
                                         google_price_tier = res.get("priceLevel", "PRICE_LEVEL_UNSPECIFIED")
                                         price_symbols = {
                                             "PRICE_LEVEL_INEXPENSIVE": "$", 
