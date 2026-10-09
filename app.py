@@ -183,8 +183,9 @@ else:
             cuisine_go = st.selectbox("What Cuisine do you want?", ["Any", "Italian", "Mexican", "Asian", "Burgers/American", "Thai", "Sushi"], key="c_go")
             mood_go = st.selectbox("What is your current vibe?", ["Casual Dining", "Date Night", "Late Night Cravings", "Fast & Trendy"], key="m_go")
         with col2_go:
-            budget_go = st.select_slider("Amount Willing to Spend", options=["", "", "\[", "\]\["], value="\]", key="b_go")
+            budget_go = st.select_slider("Amount Willing to Spend", options=["$", "$$", "$$$", "$$$$"], value="$$", key="b_go")
             distance_go = st.slider("Maximum Distance (Miles)", min_value=1, max_value=25, value=5, key="d_go")
+
             
         health_go = st.multiselect("Health Filters / Restrictions", ["Gluten-Free Options", "Vegan Friendly", "Low-Calorie Menu"], key="h_go")
         
@@ -201,7 +202,7 @@ else:
                 else:
                     query_string = f"{cuisine_go if cuisine_go != 'Any' else ''} {mood_go} restaurant near {user_location}"
                     
-                    budget_map = {"": 1, "": 2, "\[": 3, "\]\$\$": 4}
+                   budget_map = {"$": 1, "$$": 2, "$$$": 3, "$$$$": 4}
                     max_price_tier = budget_map.get(budget_go, 2)
                     
                     google_url = "https://googleapis.com"
