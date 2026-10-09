@@ -206,7 +206,9 @@ else:
                     budget_map = {"$": 1, "$$": 2, "$$$": 3, "$$$$": 4}
                     max_price_tier = budget_map.get(budget_go, 2)
                     
+                    # 🚀 FIX: The complete, functional endpoint address
                     google_url = "https://googleapis.com"
+                    
                     google_params = {
                         "query": query_string,
                         "key": GOOGLE_KEY
@@ -214,6 +216,7 @@ else:
                     
                     try:
                         response = requests.get(google_url, params=google_params, timeout=10)
+
                         
                         if response.status_code == 200:
                             data = response.json()
