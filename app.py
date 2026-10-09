@@ -159,16 +159,11 @@ with tab_go_out:
                 st.markdown(f"💡 **Why you'll love it:** {res['highlight']}")
                 st.write(f"**Budget Profile:** Max {budget_go} requirement satisfied.")
                 
+    
                 # --- GO OUT TO EAT MONETIZATION PAYDAYS ---
                 st.markdown("---")
                 col_btn1, col_btn2 = st.columns(2)
                 with col_btn1:
-st.link_button("🚗 Order Delivery via DoorDash", "doordash.com", type="secondary")
-with col_btn2:
-st.link_button("🚕 Hail Ride with Uber", "uber.com", type="primary")
-
---- NON-INVASIVE ADS STITCHED FOOTER ---
-
-st.markdown("---")
-st.caption("💡 Sponsored: Upgrade your kitchen gear! Check out our partner discounts on non-stick skillets and air fryers.")
-
+                    st.link_button("🚗 Order Delivery via DoorDash", "https://doordash.com")
+                with col_btn2:
+                    st.link_button("🚕 Hail Ride with Uber", "https://uber.com", type="primary")
