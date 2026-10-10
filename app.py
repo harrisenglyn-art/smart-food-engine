@@ -71,6 +71,64 @@ if st.button("Generate Home Recipes", type="primary", key="cook_tab_primary_gene
                         hydrated_recipes.append(fallback_profile)
                 
                 st.session_state.recipes = hydrated_recipes
+# =============================================================================
+# 1. MAIN APP WORKSPACE HEADERS (Lines 74-81 Move Here!)
+# =============================================================================
+st.title("🍳 Smart Food Recommendation Engine")
+st.write("Solve your daily food dilemma instantly.")
+
+tab_cook, tab_go_out = st.tabs(["🔍 Cook at Home", "🚗 Go Out to Eat"])
+
+# =============================================================================
+# 2. OPEN THE COOKING WORKSPACE
+# =============================================================================
+with tab_cook:
+    st.header("Cook a Perfect Meal")
+    
+    # Restored user input fields (Your lines 88-89)
+    user_ingredients = st.text_input("Enter your available ingredients:", key="ingredients_input")
+
+    # 🟢 MOVE ALL API OPERATIONS DOWN HERE INDENTED BY 4 SPACES:
+    if st.button("Generate Home Recipes", type="primary", key="cook_tab_primary_generator"):
+        if not user_ingredients:
+            st.warning("Please input ingredients to match!")
+        else:
+            with st.spinner("Searching and parsing recipe instructions..."):
+                raw_results = search_recipes_by_ingredients(user_ingredients)
+                
+                top_3_raw = raw_results[:3]
+                hydrated_recipes = []
+                
+                for item in top_3_raw:
+                    full_detail = get_recipe_details(item.get("id"))
+                    
+                    if full_detail and "api_quota_blocked" not in full_detail:
+                        full_detail["usedIngredients"] = item.get("usedIngredients", [])
+                        full_detail["missedIngredients"] = item.get("missedIngredients", [])
+                        hydrated_recipes.append(full_detail)
+                    else:
+                        fallback_profile = {
+                            "title": item.get("title", "Delicious Match Option"),
+                            "image": item.get("image", ""),
+                            "usedIngredients": item.get("usedIngredients", []),
+                            "missedIngredients": item.get("missedIngredients", []),
+                            "quota_notice": True
+                        }
+                        hydrated_recipes.append(fallback_profile)
+                
+                # This is your old line 73, now safely saved inside the button action block!
+                st.session_state.recipes = hydrated_recipes
+
+    # =============================================================================
+    # 3. RENDER RECS (Lines 87-91 Stay Intended Here!)
+    # =============================================================================
+    if st.session_state.recipes:
+        st.markdown("---")
+        st.subheader("🍳 Top 3 Recommended Match Options")
+        # ... Your expander blocks showing steps and ingredient columns ...
+
+    st.header("Cook a Perfect Meal")
+    # ... your recipe codes ...
 
     # 🟢 Render Active Hydrated Cards Below Search Operation (Indented 4 spaces to stay inside with tab_cook)
     if st.session_state.recipes:
