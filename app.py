@@ -91,7 +91,7 @@ tab_cook, tab_go_out = st.tabs(["🔍 Cook at Home", "🚗 Go Out to Eat"])
 
                 # If the fallback took over, notify the user cleanly
                 if recipe.get("quota_notice"):
-                    st.warning("⚠️ Note: Live step extraction is temporarily unavailable due to testing daily limit caps. Showing ingredient list metrics only:")
+                st.warning("⚠️ Note: Live step extraction is temporarily unavailable due to testing daily limit caps. Showing ingredient list metrics only:")
                 
                 # --- 🥦 SECTION A: INGREDIENTS LIST ---
                 st.markdown("### 🛒 Ingredients Required")
