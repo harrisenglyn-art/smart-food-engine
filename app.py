@@ -94,7 +94,7 @@ with tab_cook:
         
         for recipe in st.session_state.recipes:
             # Cleanly pull the title or fallback safely
-            recipe_title = recipe.get("title") or recipe.get("name") or "Delicious Match Option"
+            recipe_title = recipe.get("title") or recipe.get("name") 
             
             with st.expander(f"📖 {recipe_title}", expanded=True):
                 # Ensure the image loads properly
@@ -140,8 +140,7 @@ with tab_cook:
                 elif recipe.get("instructions"):
                     # Backup fallback if it returns raw HTML/Text strings instead of list arrays
                     st.write(recipe["instructions"])
-                else:
-                    st.write("Mix ingredients well and cook thoroughly according to taste!")
+            
 # =============================================================================
 # 🚗 TAB 2: GO OUT TO EAT (RESTORED WITH GOOGLE PLACES API)
 # =============================================================================
