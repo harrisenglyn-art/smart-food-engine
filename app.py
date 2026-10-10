@@ -142,9 +142,6 @@ with tab_cook:
         st.subheader("🍳 Top 3 Recommended Match Options")
         # ... Your expander blocks showing steps and ingredient columns ...
 
-    st.header("Cook a Perfect Meal")
-    # ... your recipe codes ...
-
     # 🟢 Render Active Hydrated Cards Below Search Operation (Indented 4 spaces to stay inside with tab_cook)
     if st.session_state.recipes:
         st.markdown("---")
