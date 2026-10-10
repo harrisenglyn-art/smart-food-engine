@@ -92,10 +92,10 @@ tab_cook, tab_go_out = st.tabs(["🔍 Cook at Home", "🚗 Go Out to Eat"])
 if recipe.get("quota_notice"):
     st.warning("⚠️ Note: Live step extraction is temporarily unavailable due to testing daily limit caps. Showing ingredient list metrics only:")
                 
-                # --- 🥦 SECTION A: INGREDIENTS LIST ---
-                st.markdown("### 🛒 Ingredients Required")
-                used_ings = recipe.get("usedIngredients", [])
-                missed_ings = recipe.get("missedIngredients", [])
+# --- 🥦 SECTION A: INGREDIENTS LIST ---
+st.markdown("### 🛒 Ingredients Required")
+used_ings = recipe.get("usedIngredients", [])
+missed_ings = recipe.get("missedIngredients", [])
                 
                 col_ing1, col_ing2 = st.columns(2)
                 with col_ing1:
