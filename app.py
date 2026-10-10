@@ -171,7 +171,12 @@ with tab_cook:
                 ],
                 key="c_cook_dropdown"
             )
-            mood_cook = st.selectbox("Current Mood", ["Comfort Food", "Quick & Easy", "Healthy & Light", "Cozy"], key="m_cook_dropdown")
+        # 🟢 UPDATED: Added Any Mood plus fresh, high-value user vibes!
+        mood_cook = st.selectbox(
+            "Current Mood", 
+            ["Any Mood", "Comfort Food", "Quick & Easy", "Healthy & Light", "Cozy & Warming", "Date Night / Gourmet", "Late Night Cravings"], 
+            key="m_cook_dropdown"
+        )
         
         with col2:
             health_goal = st.selectbox(
@@ -193,7 +198,24 @@ with tab_cook:
                 st.warning("Please input ingredients to match!")
             else:
                 with st.spinner("Searching and parsing recipe instructions..."):
-                    # 🟢 FIXED: Kept all parameters perfectly indented to stay inside the button context loop
+                
+                    # 🟢 NEW ADVANCED FEATURE: Translate user mood selection into Spoonacular API query tags
+                    api_tags_list = []
+                
+                    if mood_cook == "Comfort Food":
+                        user_ingredients += ", cheese, butter"  # Subtle enhancement to shift results toward comfort foods
+                    elif mood_cook == "Cozy & Warming":
+                        api_tags_list.append("soup")
+                        api_tags_list.append("stew")
+                    elif mood_cook == "Date Night / Gourmet":
+                        api_tags_list.append("dinner")
+                    elif mood_cook == "Late Night Cravings":
+                        api_tags_list.append("snack")
+                    
+                    # If an explicit tag was determined by mood, join it or keep it empty for "Any Mood"
+                    mood_tags_string = ",".join(api_tags_list) if api_tags_list else ""
+                
+                    # Execute your advanced multi-parameter API data pull
                     raw_results = search_recipes_by_ingredients(
                         user_ingredients,
                         cuisine=cuisine_cook,
@@ -201,8 +223,9 @@ with tab_cook:
                         max_time=max_time
                     )
 
-                    top_3_raw = raw_results[:3]
-                    hydrated_recipes = []
+
+                        top_3_raw = raw_results[:3]
+                        hydrated_recipes = []
                 
                 for item in top_3_raw:
                     full_detail = get_recipe_details(item.get("id"))
