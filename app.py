@@ -142,7 +142,7 @@ with tab_cook:
         dropdown_options = []
         for category, items in ingredient_catalog.items():
             for item in items:
-                dropdown_options.append(f"{item} ({category.split()[-1]})")
+        dropdown_options.append(f"{item} ({category.split()[-1]})")
 
     # 2. RENDER THE MULTI-SELECT DROPDOWN COMPONENT (Capped strictly at 10 items)
     selected_display_items = st.multiselect(
