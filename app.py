@@ -1,5 +1,8 @@
 import streamlit as st
 import requests
+# 🟢 INITIALIZE MEMORY ARRAYS SECURELY AT THE GLOBAL LAYER (Far left margin, no spaces)
+if "recipes" not in st.session_state:
+    st.session_state.recipes = []
 
 def get_recipe_details(recipe_id):
     """Fetches full recipe metadata explicitly containing instruction step matrices."""
