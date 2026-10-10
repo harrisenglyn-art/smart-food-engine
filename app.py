@@ -125,14 +125,15 @@ tab_cook, tab_go_out = st.tabs(["🔍 Cook at Home", "🚗 Go Out to Eat"])
 # =============================================================================
 # 2. OPEN THE COOKING WORKSPACE
 # =============================================================================
+    
     st.header("Cook a Perfect Meal")
     
-    # 🟢 1. DEFINE THE ENGINE'S CATEGORIZED INGREDIENT LAUNCH DATASET
+    # 1. DEFINE THE ENGINE'S CATEGORIZED INGREDIENT LAUNCH DATASET
     ingredient_catalog = {
         "🥩 Proteins / Meats": ["Chicken", "Beef", "Pork", "Salmon", "Tuna", "Shrimp", "Eggs", "Tofu", "Bacon", "Turkey"],
         "🥦 Vegetables": ["Garlic", "Onion", "Tomato", "Spinach", "Broccoli", "Bell Pepper", "Potato", "Carrot", "Zucchini", "Mushroom"],
         "🌾 Grains & Rice": ["Pasta", "White Rice", "Brown Rice", "Quinoa", "Oats", "Bread", "Tortillas", "Flour", "Noodles"],
-        "🍎 Fruits": ["Lemon", "Lime", "Apple", "Banana", "Avocado", "Orange", "Strawberries", "Blueberries", "Tomato", "Pineapple"],
+        "🍎 Fruits": ["Lemon", "Lime", "Apple", "Banana", "Avocado", "Orange", "Strawberries", "Blueberries", "Pineapple"],
         "🧀 Dairy & Alternatives": ["Butter", "Milk", "Cheddar Cheese", "Parmesan", "Mozzarella", "Yogurt", "Cream Cheese", "Almond Milk"],
         "🧂 Pantry & Spices": ["Olive Oil", "Soy Sauce", "Honey", "Salt", "Black Pepper", "Oregano", "Cumin", "Paprika", "Garlic Powder"]
     }
@@ -143,7 +144,7 @@ tab_cook, tab_go_out = st.tabs(["🔍 Cook at Home", "🚗 Go Out to Eat"])
         for item in items:
             dropdown_options.append(f"{item} ({category.split()[-1]})")
 
-    # 🟢 2. RENDER THE MULTI-SELECT DROPDOWN COMPONENT (Capped strictly at 10 items)
+    # 2. RENDER THE MULTI-SELECT DROPDOWN COMPONENT (Capped strictly at 10 items)
     selected_display_items = st.multiselect(
         "Select your available kitchen ingredients (Choose up to 10):",
         options=dropdown_options,
@@ -151,9 +152,10 @@ tab_cook, tab_go_out = st.tabs(["🔍 Cook at Home", "🚗 Go Out to Eat"])
         key="categorized_ingredients_dropdown_matrix"
     )
     
-    # Clean and convert the user's selections back into a comma-separated string for Spoonacular
+    # 🟢 FIXED LOGIC BUG: Safely extracts the ingredient name and converts it to lowercase
     cleaned_ingredients_list = [item.split(" (")[0].lower() for item in selected_display_items]
     user_ingredients = ", ".join(cleaned_ingredients_list)
+
 
     col1, col2 = st.columns(2)
     with col1:
