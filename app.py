@@ -138,10 +138,10 @@ if st.button("Generate Home Recipes", type="primary"):
                         "fillIngredients": True,  
                         "number": 3               
                 }
-                    if health_goal != "None":
-                        params["diet"] = health_goal.lower().replace(" ", "")
-                    if cuisine_cook != "Any":
-                        params["cuisine"] = cuisine_cook.lower()
+                if health_goal != "None":
+                    params["diet"] = health_goal.lower().replace(" ", "")
+                if cuisine_cook != "Any":
+                    params["cuisine"] = cuisine_cook.lower()
                         
                     headers = {
                         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
