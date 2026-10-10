@@ -142,20 +142,19 @@ with tab_cook:
         dropdown_options = []
         for category, items in ingredient_catalog.items():
             for item in items:
-        dropdown_options.append(f"{item} ({category.split()[-1]})")
+            dropdown_options.append(f"{item} ({category.split()[-1]})")
 
-    # 2. RENDER THE MULTI-SELECT DROPDOWN COMPONENT (Capped strictly at 10 items)
-    selected_display_items = st.multiselect(
-        "Select your available kitchen ingredients (Choose up to 10):",
-        options=dropdown_options,
-        max_selections=10,
-        key="categorized_ingredients_dropdown_matrix"
-    )
+        # 2. RENDER THE MULTI-SELECT DROPDOWN COMPONENT (Capped strictly at 10 items)
+        selected_display_items = st.multiselect(
+            "Select your available kitchen ingredients (Choose up to 10):",
+            options=dropdown_options,
+            max_selections=10,
+            key="categorized_ingredients_dropdown_matrix"
+        )
     
-    # 🟢 FIXED LOGIC BUG: Safely extracts the ingredient name and converts it to lowercase
-    cleaned_ingredients_list = [item.split(" (")[0].lower() for item in selected_display_items]
-    user_ingredients = ", ".join(cleaned_ingredients_list)
-
+        # 🟢 FIXED LOGIC BUG: Safely extracts the ingredient name and converts it to lowercase
+        cleaned_ingredients_list = [item.split(" (")[0].lower() for item in selected_display_items]
+        user_ingredients = ", ".join(cleaned_ingredients_list)
 
     col1, col2 = st.columns(2)
     with col1:
