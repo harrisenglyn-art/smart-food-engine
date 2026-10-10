@@ -100,7 +100,7 @@ else:
             servings = st.number_input("Number of Servings Needed", min_value=1, max_value=20, value=2, step=1, key="s_cook")
             
         max_time = st.slider("Max Prep/Cooking Time (Minutes)", min_value=10, max_value=120, value=60, step=5, key="t_cook")
-# 1. Unified User Search Trigger
+# # 1. Unified User Search Trigger
 if st.button("Generate Home Recipes", type="primary"):
     if not user_ingredients:
         st.warning("Please input ingredients to match!")
@@ -123,8 +123,9 @@ if st.button("Generate Home Recipes", type="primary"):
                     if full_detail:
                         hydrated_recipes.append(full_detail)
                 
-                # Save the fully detailed recipes to session state for the UI cards
+                # 🟢 FINISH THE BLOCK: Save the data so your cards can read it
                 st.session_state.recipes = hydrated_recipes
+
 
                 st.info("🍳 Searching Spoonacular database for your top 3 ranked options...")
                                         
