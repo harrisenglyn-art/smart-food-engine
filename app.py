@@ -1,337 +1,115 @@
+import streamlit as pd
 import streamlit as st
 import requests
 
-# --- 1. CONFIGURATION & ENCRYPTED KEYS ---
-SPOONACULAR_API_KEY = st.secrets.get("SPOONACULAR_API_KEY", "")
 def get_recipe_details(recipe_id):
-    """Fetches the full recipe payload, explicitly hydrating instructions."""
+    """Fetches full recipe metadata explicitly containing instruction step matrices."""
+    SPOONACULAR_API_KEY = st.secrets.get("SPOONACULAR_API_KEY", "").strip()
     url = f"https://spoonacular.com{recipe_id}/information"
-    # Ensure this matches whatever variable name you used for your Spoonacular API key
-    params = {"apiKey": SPOONACULAR_API_KEY} 
-    
+    params = {"apiKey": SPOONACULAR_API_KEY}
     try:
         response = requests.get(url, params=params)
         return response.json()
     except Exception as e:
-        st.error(f"Error fetching recipe instructions: {e}")
         return {}
 
-
-st.set_page_config(page_title="Smart Food Engine", page_icon="🍔", layout="centered")
-
-# --- 2. UI STYLE UPGRADES (UX/Aesthetics) ---
-st.markdown("""
-    <style>
-    .stButton>button {
-        border-radius: 20px;
-        font-weight: bold;
-        transition: all 0.3s ease;
+def search_recipes_by_ingredients(ingredients_string):
+    """Fetches matching recipes from Spoonacular based on matching raw text lists."""
+    SPOONACULAR_API_KEY = st.secrets.get("SPOONACULAR_API_KEY", "").strip()
+    url = "https://spoonacular.comfindByIngredients"
+    params = {
+        "apiKey": SPOONACULAR_API_KEY,
+        "ingredients": ingredients_string,
+        "number": 5
     }
-    .stButton>button:hover {
-        transform: scale(1.02);
-    }
-    .premium-box {
-        background-color: #fff3cd;
-        padding: 15px;
-        border-radius: 10px;
-        border-left: 5px solid #ffc107;
-    }
-    </style>
-""", unsafe_allow_html=True)
-
-# --- 3. INITIALIZE SESSION STATE FOR ACCOUNT TRACKING ---
-if "user_tier" not in st.session_state:
-    st.session_state["user_tier"] = "Free"
-
-# --- 4. SIDEBAR (Premium Tier Monetization Anchor) ---
-st.sidebar.markdown(f"👤 **Account Tier:** `{st.session_state['user_tier']}`")
-if st.session_state["user_tier"] == "Free":
-    st.sidebar.markdown("---")
-    st.sidebar.markdown('<div class="premium-box">👑 <b>Unlock Advanced Macros</b><br>Instant allergen blockers and calorie calendars for $2.99/mo.</div>', unsafe_allow_html=True)
-    if st.sidebar.button("✨ Register for Paid Membership"):
-        st.session_state["show_registration"] = True
-st.sidebar.markdown("---")
-
-# --- 5. PREMIUM MEMBER REGISTRATION FLOW ---
-if st.session_state.get("show_registration"):
-    st.header("👑 Join the Premium Membership Tier")
-    st.write("Create your account and unlock hyper-personalized food recommendations.")
-    
-    with st.form("reg_form"):
-        new_email = st.text_input("Email Address")
-        new_pass = st.text_input("Password", type="password")
-        payment_mock = st.checkbox("Agree to monthly subscription billing ($2.99/mo)")
-        
-        submit_reg = st.form_submit_button("Proceed to Secure Checkout")
-        if submit_reg:
-            if new_email and new_pass and payment_mock:
-                st.session_state["user_tier"] = "Premium"
-                st.session_state["show_registration"] = False
-                st.success("🎉 Welcome aboard! Your Premium account is fully active.")
-                st.rerun()
-            else:
-                st.warning("Please complete all registration fields.")
-                
-    if st.button("Cancel & Return to App"):
-        st.session_state["show_registration"] = False
-        st.rerun()
+    try:
+        response = requests.get(url, params=params)
+        return response.json()
+    except Exception as e:
+        st.error(f"Error fetching recipe database query: {e}")
+        return []
+# Initialize session memory arrays securely
+if "recipes" not in st.session_state:
+    st.session_state.recipes = []
 
 # --- 6. MAIN APP INTERFACE LAYER ---
-else:
-    st.title("🍔 Smart Food Recommendation Engine")
-    st.write("Solve your daily food dilemma instantly. Tell us what you're craving!")
+# Adjust this container logic block level if you utilize an outer onboarding auth flow
+st.title("🍳 Smart Food Recommendation Engine")
+st.write("Solve your daily food dilemma instantly. Tell us what you're craving!")
 
-    # --- TWO INITIAL OPTIONS: THE TOP NAVIGATION TABS ---
-    tab_cook, tab_go_out = st.tabs(["🍳 Cook at Home", "🚗 Go Out to Eat"])
+# --- TWO INITIAL OPTIONS: THE TOP NAVIGATION TABS ---
+tab_cook, tab_go_out = st.tabs(["🔍 Cook at Home", "🚗 Go Out to Eat"])
+# =============================================================================
+# 🔍 TAB 1: COOK AT HOME
+# =============================================================================
+with tab_cook:
+    st.header("Cook a Perfect Meal")
+    
+    user_ingredients = st.text_input(
+        "Enter your available ingredients (separated by commas):", 
+        key="ingredients_input"
+    )
 
-    # =========================================================================
-    # 🍳 TAB 1: COOK AT HOME
-    # =========================================================================
-    with tab_cook:
-        st.header("Cook a Perfect Meal")
-# 🟢 Add this right ABOVE your "Unified User Search Trigger" button block:
-        user_ingredients = st.text_input("Enter your available ingredients (separated by commas):", key="ingredients_input")
-        
-        col1, col2 = st.columns(2)
-        with col1:
-            cuisine_cook = st.selectbox("Cuisine Choice", ["Any", "Italian", "Mexican", "Asian", "American", "Mediterranean"], key="c_cook")
-            mood_cook = st.selectbox("Current Mood", ["Comfort Food", "Quick & Easy", "Healthy & Light", "Cozy"], key="m_cook")
-        with col2:
-            health_goal = st.selectbox("Dietary Targets", ["None", "Gluten Free", "Ketogenic", "Vegan", "Vegetarian"], key="h_cook")
-            servings = st.number_input("Number of Servings Needed", min_value=1, max_value=20, value=2, step=1, key="s_cook")
-            
-    # (This lines up with your existing code on lines 102-103)
+    col1, col2 = st.columns(2)
+    with col1:
+        cuisine_cook = st.selectbox("Cuisine Choice", ["Any", "Italian", "Mexican", "Asian", "American", "Mediterranean"])
+        mood_cook = st.selectbox("Current Mood", ["Comfort Food", "Quick & Easy", "Healthy & Light", "Cozy"], key="m_cook")
+    with col2:
+        health_goal = st.selectbox("Dietary Targets", ["None", "Gluten Free", "Ketogenic", "Vegan", "Vegetarian"], key="h_goal")
+        servings = st.number_input("Number of Servings Needed", min_value=1, max_value=20, value=2, step=1, key="s_cook")
+
     max_time = st.slider("Max Prep/Cooking Time (Minutes)", min_value=10, max_value=120, value=60, step=5, key="t_c")
-
-    # # 1. Unified User Search Trigger (Indented 4 spaces to stay inside tab_cook)
-    if st.button("Generate Home Recipes", type="primary"):
+    # # 1. Unified User Search Trigger Engine
+    if st.button("Generate Home Recipes", type="primary", key="cook_tab_primary_generator"):
         if not user_ingredients:
             st.warning("Please input ingredients to match!")
         else:
-            # Secure the API Key BEFORE running any API calls
             SPOONACULAR_API_KEY = st.secrets.get("SPOONACULAR_API_KEY", "").strip()
             
-            # Simplified safety check to resolve your scenario B secrets issue
             if not SPOONACULAR_API_KEY:
-                st.error("🛑 Connection Aborted: Your Spoonacular API Key is completely missing or unconfigured in your Streamlit Cloud Secrets dashboard!")
+                st.error("🛑 Connection Aborted: Your Spoonacular API Key is missing or unconfigured in your Cloud Settings panel!")
             else:
-                # Everything is valid, proceed to fetch and hydrate data
                 with st.spinner("Searching and parsing recipe instructions..."):
-                    # Fetch basic matching lists
                     raw_results = search_recipes_by_ingredients(user_ingredients)
                     
-                    # Hydrate the basic recipes with full step-by-step instructions
                     hydrated_recipes = []
-                for item in raw_results:
-                    full_detail = get_recipe_details(item["id"])
-                    if full_detail:
-                        hydrated_recipes.append(full_detail)
+                    for item in raw_results:
+                        full_detail = get_recipe_details(item["id"])
+                        if full_detail:
+                            hydrated_recipes.append(full_detail)
                     
-                # Save the fully detailed recipes to session state for the UI cards
-                st.session_state.recipes = hydrated_recipes
-                
-                # 🟢 FINISH THE BLOCK: Save the data so your cards can read it
-                st.session_state.recipes = hydrated_recipes
+                    st.session_state.recipes = hydrated_recipes
 
-
-                st.info("🍳 Searching Spoonacular database for your top 3 ranked options...")
-                                        
-                # 🟢 FIX 1: Set correct production API path destination endpoint URL
-                url = "https://api.spoonacular.com/recipes/complexSearch"
-                params = {
-                        "apiKey": SPOONACULAR_API_KEY,
-                        "query": ingredients,
-                        "maxReadyTime": max_time,
-                        "addRecipeInformation": True,
-                        "fillIngredients": True,  
-                        "number": 3               
-                }
-                if health_goal != "None":
-                    params["diet"] = health_goal.lower().replace(" ", "")
-                if cuisine_cook != "Any":
-                    params["cuisine"] = cuisine_cook.lower()
-                        
-                    headers = {
-                        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-                    }
-                    
-                    try:
-                        response = requests.get(url, params=params, headers=headers, timeout=10)
-                        
-                        if response.status_code == 401:
-                            st.error("🔴 API Key Authorization Failed. Please check your key characters inside your Secrets dashboard!")
-                        elif response.status_code == 402:
-                            st.error("🔴 Daily Free Limit Reached! Your Spoonacular developer quota transforms automatically at midnight.")
-                        elif response.status_code != 200:
-                            st.error(f"🔴 Spoonacular Server Error: Code {response.status_code}.")
-                            st.warning(f"Raw message: {response.text}")
-                        else:
-                            try:
-                                data = response.json()
-                                recipes = data.get("results", [])
-                            except ValueError:
-                                st.error("🔴 Server sent back an invalid data format.")
-                                st.warning(f"Message from Spoonacular: {response.text}")
-                                recipes = []
-                            
-                            if recipes:
-                                st.success(f"✨ Found {len(recipes)} amazing matches tailored to your profile!")
-                                
-                                recipe_tab_names = [f"🏆 Rank #{i+1}: {r.get('title')[:25]}..." for i, r in enumerate(recipes)]
-                                swiper_tabs = st.tabs(recipe_tab_names)
-                                
-                                for index, recipe in enumerate(recipes):
-                                    with swiper_tabs[index]:
-                                        st.subheader(recipe.get("title"))
-                                        if recipe.get("image"):
-                                            st.image(recipe["image"])
-                                            
-                                        base_servings = recipe.get("servings", 1)
-                                        ready_in = recipe.get("readyInMinutes", max_time)
-                                        st.markdown(f"⏱️ **Ready in:** {ready_in} mins | 🍽️ **Base Servings:** {base_servings} ➔ **Your Scaled Request:** {servings} servings")
-                                        
-                                        st.markdown("### 🛒 Scaled Ingredients List")
-                                        scale_multiplier = float(servings) / float(base_servings)
-                                        
-                                        extended_ingredients = recipe.get("extendedIngredients", [])
-                                        if extended_ingredients:
-                                            for ing in extended_ingredients:
-                                                base_amount = ing.get("amount", 0.0)
-                                                scaled_amount = base_amount * scale_multiplier
-                                                unit = ing.get("unit", "")
-                                                name = ing.get("name", "")
-                                                st.write(f"• **{scaled_amount:.2f} {unit}** of {name}")
-                                        else:
-                                            st.write("Refer to directions below for items.")
-                                            
-                                        st.markdown("### 📋 Step-by-Step Instructions")
-                                        analyzed = recipe.get("analyzedInstructions")
-                                        
-                                        # 🟢 FIXED: Target the first dictionary index inside the instruction list cleanly
-                                        if analyzed and isinstance(analyzed, list) and len(analyzed) > 0:
-                                            # Unpack the first instruction cluster entry securely
-                                            instruction_block = analyzed[0]
-                                            steps = instruction_block.get("steps", [])
-                                            
-                                            if steps:
-                                                for step in steps:
-                                                    st.write(f"**Step {step.get('number')}:** {step.get('step')}")
-                                            else:
-                                                st.write("Directions are missing structural data step rows.")
-                                        elif recipe.get("instructions"):
-                                            # Secondary fallback text field layout channel
-                                            st.write(recipe["instructions"])
-                                        else:
-                                            st.write("Mix ingredients well and cook thoroughly according to taste!")
-                                            
-                                        st.markdown("---")
-                                        st.info(f"🛒 **Missing something?** [Instantly order these scaled ingredients for {servings} people via Instacart](https://instacart.com)")
-                            else:
-                                st.error("No recipes matched that exact configuration. Try widening your cooking time or filters!")
-                    except Exception as e:
-                        st.error(f"Failed to process recipe pipeline data safely. System message: {str(e)}")
-
-    # =========================================================================
-    # 🚗 TAB 2: GO OUT TO EAT (LIVE GOOGLE PLACES API INTEGRATION)
-    # =========================================================================
-    with tab_go_out:
-        st.header("Find Local Restaurants Nearby")
-        st.write("Don't want to clean dishes? Tell us your vibe and locate the best local dining spots.")
-        
-        user_location = st.text_input("Enter your current City or Zip Code:", placeholder="e.g., Los Angeles, CA", key="loc_go")
-        
-        col1_go, col2_go = st.columns(2)
-        with col1_go:
-            cuisine_go = st.selectbox("What Cuisine do you want?", ["Any", "Italian", "Mexican", "Asian", "Burgers/American", "Thai", "Sushi"], key="c_go")
-            mood_go = st.selectbox("What is your current vibe?", ["Casual Dining", "Date Night", "Late Night Cravings", "Fast & Trendy"], key="m_go")
-        with col2_go:
-            budget_go = st.select_slider("Amount Willing to Spend", options=["$", "$$", "$$$", "$$$$"], value="$$", key="b_go")
-            distance_go = st.slider("Maximum Distance (Miles)", min_value=1, max_value=25, value=5, key="d_go")
-            
-        health_go = st.multiselect("Health Filters / Restrictions", ["Gluten-Free Options", "Vegan Friendly", "Low-Calorie Menu"], key="h_go")
-        
-        if st.button("Locate Nearby Restaurants", type="primary"):
-            if not user_location:
-                st.warning("Please enter your city or zip code so we can find places near you!")
-            else:
-                st.info(f"🚗 Querying Google Places database for live food spots near {user_location}...")
+    # Render Active Hydrated Cards Below Search Operation
+    if st.session_state.recipes:
+        for recipe in st.session_state.recipes:
+            with st.expander(f"📖 {recipe.get('title', 'Unknown Recipe')}"):
+                if recipe.get("image"):
+                    st.image(recipe["image"])
                 
-                GOOGLE_KEY = st.secrets.get("GOOGLE_PLACES_KEY", "")
+                st.markdown("### 📋 Step-by-Step Instructions")
+                analyzed = recipe.get("analyzedInstructions")
                 
-                if not GOOGLE_KEY:
-                    st.error("🔴 Google Places API Key missing! Please add GOOGLE_PLACES_KEY to your Streamlit Cloud Secrets dashboard.")
+                if analyzed and isinstance(analyzed, list) and len(analyzed) > 0:
+                    steps = analyzed[0].get("steps", [])
+                    if steps:
+                        for step in steps:
+                            st.write(f"**Step {step.get('number')}:** {step.get('step')}")
+                    else:
+                        st.write("Directions are missing structural data rows.")
+                elif recipe.get("instructions"):
+                    st.write(recipe["instructions"])
                 else:
-                    # 🟢 FIXED: Replaced 'googleapis.com' with the correct fully qualified production endpoint 
-                    google_url = "https://places.googleapis.com/v1/places:searchText"
-                    query_string = f"{cuisine_go if cuisine_go != 'Any' else ''} {mood_go} restaurant near {user_location}"
-                    
-                    payload = {
-                        "textQuery": query_string,
-                        "maxResultCount": 3
-                    }
-                    
-                    headers = {
-                        "Content-Type": "application/json",
-                        "X-Goog-Api-Key": GOOGLE_KEY,
-                        "X-Goog-FieldMask": "places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.priceLevel,places.currentOpeningHours"
-                    }
-                    
-                    try:
-                        response = requests.post(google_url, json=payload, headers=headers, timeout=10)
-                        
-                        if response.status_code == 200:
-                            data = response.json()
-                            raw_places = data.get("places", [])
-                            
-                            if raw_places:
-                                st.success(f"✨ Found live dining venues matched to your profile!")
-                                
-                                rest_tab_names = [f"📍 Rank #{i+1}: {res.get('displayName', {}).get('text', 'Restaurant')[:15]}..." for i, res in enumerate(raw_places)]
-                                restaurant_swiper = st.tabs(rest_tab_names)
-                                
-                                for index, res in enumerate(raw_places):
-                                    with restaurant_swiper[index]:
-                                        display_name = res.get("displayName", {}).get("text", "Local Venue")
-                                        st.subheader(display_name)
-                                        
-                                        address = res.get("formattedAddress", "Address unavailable")
-                                        rating = res.get("rating", "No reviews yet")
-                                        total_reviews = res.get("userRatingCount", 0)
-                                        
-                                        google_price_tier = res.get("priceLevel", "PRICE_LEVEL_UNSPECIFIED")
-                                        price_symbols = {
-                                            "PRICE_LEVEL_INEXPENSIVE": "$", 
-                                            "PRICE_LEVEL_MODERATE": "$$", 
-                                            "PRICE_LEVEL_EXPENSIVE": "$$$", 
-                                            "PRICE_LEVEL_VERY_EXPENSIVE": "$$$$"
-                                        }
-                                        google_price = price_symbols.get(google_price_tier, "$$")
-
-                                        
-                                        st.markdown(f"📍 **Address:** {address}")
-                                        st.markdown(f"📊 **Community Rating:** ⭐ {rating} / 5 ({total_reviews} reviews) | 💰 **Price Level:** `{google_price}`")
-                                        
-                                        open_now = res.get("currentOpeningHours", {}).get("openNow")
-                                        if open_now is True:
-                                            st.markdown("🟢 **Status:** Open right now! Doors are ready.")
-                                        elif open_now is False:
-                                            st.markdown("🔴 **Status:** Currently closed. Double-check hours before driving out!")
-                                            
-                                        st.markdown("---")
-                                        col_btn1, col_btn2 = st.columns(2)
-                                        with col_btn1:
-                                            # 🟢 FIXED: Replaced non-existent link mapping with valid Google Maps Search query matrix
-                                            clean_name = display_name.replace(" ", "+")
-                                            clean_address = address.replace(" ", "+")
-                                            maps_link = f"https://google.com{clean_name}+{clean_address}"
-                                            st.link_button("🗺️ Open in Google Maps", maps_link, type="primary")
-                                        with col_btn2:
-                                            st.link_button("🚗 Order Delivery via DoorDash", "https://doordash.com")
-                            else:
-                                st.error("No venues matched your criteria. Try adjustments to your selection filters!")
-                        else:
-                            st.error(f"🔴 Google API Server Error: Status Code {response.status_code}")
-                            if response.status_code == 403:
-                                st.info("💡 Tip: Ensure 'Places API (New)' status is toggled ON inside your Google Cloud Console Library dashboard.")
-                    except Exception as e:
-                        st.error(f"Failed to pull live restaurant data safely. System message: {str(e)}")
+                    st.write("Mix ingredients well and cook thoroughly according to taste!")
+# =============================================================================
+# 🚗 TAB 2: GO OUT TO EAT
+# =============================================================================
+with tab_go_out:
+    st.header("Order Take Out or Delivery")
+    st.write("Find excellent choices nearby to satisfy your cravings without cooking!")
+    
+    # 🟢 PLACE ALL YOUR TAKE OUT INPUT PARAMETERS & MAP INTERACTION CODE DIRECTLY HERE
+    takeout_zip = st.text_input("Enter Delivery ZIP Code or Address:", key="takeout_location_tracker")
+    cuisine_takeout = st.selectbox("What food type are you hunting?", ["Any", "Burgers", "Pizza", "Sushi", "Thai", "Tacos"], key="t_cuisine")
+    
+    st.info("Restaurant recommendations mapping modules will deploy securely right inside this panel area.")
