@@ -26,7 +26,7 @@ def search_recipes_by_ingredients(ingredients_string, cuisine="Any", diet="None"
     SPOONACULAR_API_KEY = st.secrets.get("SPOONACULAR_API_KEY", "").strip()
     
     # Switch to complexSearch to natively support multi-parameter matrix filters
-    url = "https://spoonacular.com"
+    url = "https://api.spoonacular.com/recipes/complexSearch"
     
     params = {
         "apiKey": SPOONACULAR_API_KEY,
