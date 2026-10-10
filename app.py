@@ -139,11 +139,11 @@ with tab_cook:
             "🧂 Pantry & Spices": ["Olive Oil", "Soy Sauce", "Honey", "Salt", "Black Pepper", "Oregano", "Cumin", "Paprika", "Garlic Powder"]
         }
     
-    # Flatten the catalog into a cleanly structured display list for the dropdown select row
-    dropdown_options = []
-    for category, items in ingredient_catalog.items():
-        for item in items:
-            dropdown_options.append(f"{item} ({category.split()[-1]})")
+        # Flatten the catalog into a cleanly structured display list for the dropdown select row
+        dropdown_options = []
+        for category, items in ingredient_catalog.items():
+            for item in items:
+                dropdown_options.append(f"{item} ({category.split()[-1]})")
 
     # 2. RENDER THE MULTI-SELECT DROPDOWN COMPONENT (Capped strictly at 10 items)
     selected_display_items = st.multiselect(
