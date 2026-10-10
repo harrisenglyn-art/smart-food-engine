@@ -271,8 +271,8 @@ with tab_go_out:
         search_radius = st.slider("Search Distance Radius (Miles)", min_value=1, max_value=25, value=5, step=1, key="t_radius")
         price_range = st.select_slider("Price Level Target", options=["$", "$$", "$$$", "$$$$"], value="$$", key="t_price")
 
-    # 1. Google Places Search Trigger Engine
-    if st.button("Find Nearby Restaurants", type="primary", key="takeout_tab_final_launch_button_v2"):
+    # 1. Google Places Search Trigger Engine (Migrated to Places API New)
+    if st.button("Find Nearby Restaurants", type="primary", key="takeout_tab_final_launch_button_v3"):
         if not takeout_location:
             st.warning("Please provide a location target to route coordinates!")
         else:
@@ -281,55 +281,53 @@ with tab_go_out:
             if not GOOGLE_PLACES_API_KEY:
                 st.error("🛑 Connection Aborted: Your GOOGLE_PLACES_API_KEY is missing or unconfigured in your Cloud Settings panel!")
             else:
-                with st.spinner("Querying Google Places dataset for matching venues..."):
+                with st.spinner("Querying Google Places (New) dataset for matching venues..."):
                     
-                    # 🟢 SYSTEM FIX: Clean text query optimization format that Google recognizes instantly
-                    places_url = f"https://maps.googleapis.com/maps/api/place/textsearch/json"
-                    query_string = f"{cuisine_takeout} near {takeout_location}"
+                    # 🟢 NEW COMPATIBLE GOOGLE MAPS ENDPOINT
+                    places_url = "https://googleapis.com"
                     
-                    places_params = {
-                        "query": query_string,
-                        "key": GOOGLE_PLACES_API_KEY
+                    # Modern APIs pass data in a JSON body rather than raw URL parameters
+                    payload_data = {
+                        "textQuery": f"{cuisine_takeout} restaurant near {takeout_location}"
                     }
                     
-                try:
-                    response = requests.get(places_url, params=places_params)
-                    places_data = response.json()
+                    # Modern APIs require headers specifying your key and the exact data fields you want to return
+                    headers = {
+                        "Content-Type": "application/json",
+                        "X-Goog-Api-Key": GOOGLE_PLACES_API_KEY,
+                        # This specifies the fields we want back (saves your billing costs!)
+                        "X-Goog-FieldMask": "places.displayName,places.formattedAddress,places.rating"
+                    }
                     
-                    # 🟢 DIAGNOSTIC READOUT: Check if Google sent back an error status key
-                    google_status = places_data.get("status")
-                    
-                    if google_status == "REQUEST_DENIED":
-                        error_msg = places_data.get("error_message", "No extra message provided.")
-                        st.error(f"🛑 Google API Request Denied: {error_msg}")
-                        st.info("💡 Quick Fix: Check your Google Cloud Console to ensure the 'Places API' is enabled and your billing account is active.")
-                    elif google_status == "INVALID_REQUEST":
-                        st.error("🛑 Google API Error: Invalid Request. The parameters or URL format are malformed.")
-                    elif google_status == "OVER_QUERY_LIMIT":
-                        st.error("🛑 Google API Error: Over Query Limit. Your Google account ran out of temporary trial API credits.")
-                    else:
-                        # Process results normally if status is OK or anything else
-                        restaurants = places_data.get("results", [])
+                    try:
+                        # Send a POST request to the new endpoint
+                        response = requests.post(places_url, json=payload_data, headers=headers)
                         
-                        if restaurants:
-                            valid_count = 0
-                            for rest in restaurants:
-                                name = rest.get("name", "Unknown Restaurant")
-                                address = rest.get("formatted_address", "No address listed")
-                                rating = rest.get("rating", "No ratings yet")
-                                status = "🟢 Open Now" if rest.get("opening_hours", {}).get("open_now") else "🔴 Closed"
-                                
-                                with st.container(border=True):
-                                    st.markdown(f"### 🏪 {name}")
-                                    st.write(f"📍 **Address:** {address}")
-                                    st.write(f"⭐ **Google Rating:** {rating} / 5  |  Status: {status}")
-                                valid_count += 1
-                                
-                            st.success(f"Successfully unpacked {valid_count} excellent matching options nearby!")
+                        if response.status_code == 403:
+                            st.error("🛑 Google Access Denied: Make sure 'Places API (New)' is fully enabled in your Google Cloud Console library!")
+                        elif response.status_code != 200:
+                            st.error(f"🛑 Google API Error: Received HTTP Status {response.status_code} from server.")
                         else:
-                            st.info("No matching locations found for that specific criteria query layout.")
-                            # Show raw API response if empty to help debug hidden anomalies
-                            # st.write("Raw Google Data:", places_data)
+                            places_data = response.json()
+                            restaurants = places_data.get("places", [])
                             
-                except Exception as e:
-                    st.error(f"Failed to communicate with Google Places interface: {e}")
+                            if restaurants:
+                                valid_count = 0
+                                for rest in restaurants:
+                                    # The new API nests names inside a 'displayName' dictionary
+                                    name = rest.get("displayName", {}).get("text", "Unknown Restaurant")
+                                    address = rest.get("formattedAddress", "No address listed")
+                                    rating = rest.get("rating", "No ratings yet")
+                                    
+                                    with st.container(border=True):
+                                        st.markdown(f"### 🏪 {name}")
+                                        st.write(f"📍 **Address:** {address}")
+                                        st.write(f"⭐ **Google Rating:** {rating} / 5")
+                                    valid_count += 1
+                                    
+                                st.success(f"Successfully unpacked {valid_count} excellent matching options nearby!")
+                            else:
+                                st.info("No matching locations found for that specific query layout.")
+                                
+                    except Exception as e:
+                        st.error(f"Failed to communicate with Google Places interface: {e}")
