@@ -16,7 +16,7 @@ def get_recipe_details(recipe_id):
 def search_recipes_by_ingredients(ingredients_string):
     SPOONACULAR_API_KEY = st.secrets.get("SPOONACULAR_API_KEY", "").strip()
     # 🟢 Ensure there is a '/' after .com and after recipes
-    url = "https://spoonacular.comfindByIngredients"
+    url = "https://api.spoonacular.com/recipes/findByIngredients"
     params = {
         "apiKey": SPOONACULAR_API_KEY,
         "ingredients": ingredients_string,
