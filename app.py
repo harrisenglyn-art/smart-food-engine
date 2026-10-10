@@ -167,15 +167,22 @@ else:
                                         else:
                                             st.write("Refer to directions below for items.")
                                             
-                                        st.markdown("### 📋 Step-by-Step Instructions")
+                                                                                st.markdown("### 📋 Step-by-Step Instructions")
                                         analyzed = recipe.get("analyzedInstructions")
                                         
-                                        # 🟢 FIX 2: Check length safely to eliminate index crashes
+                                        # 🟢 FIXED: Target the first dictionary index inside the instruction list cleanly
                                         if analyzed and isinstance(analyzed, list) and len(analyzed) > 0:
-                                            steps = analyzed[0].get("steps", [])
-                                            for step in steps:
-                                                st.write(f"**Step {step.get('number')}:** {step.get('step')}")
+                                            # Unpack the first instruction cluster entry securely
+                                            instruction_block = analyzed[0]
+                                            steps = instruction_block.get("steps", [])
+                                            
+                                            if steps:
+                                                for step in steps:
+                                                    st.write(f"**Step {step.get('number')}:** {step.get('step')}")
+                                            else:
+                                                st.write("Directions are missing structural data step rows.")
                                         elif recipe.get("instructions"):
+                                            # Secondary fallback text field layout channel
                                             st.write(recipe["instructions"])
                                         else:
                                             st.write("Mix ingredients well and cook thoroughly according to taste!")
