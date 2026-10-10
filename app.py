@@ -297,22 +297,24 @@ with tab_go_out:
                         response = requests.get(places_url, params=places_params)
                         places_data = response.json()
                         restaurants = places_data.get("results", [])
-                        
-                        # Render Restored Data Output Profiles
-                        for rest in restaurants:
-                            name = rest.get("name", "Unknown Restaurant")
-                            address = rest.get("formatted_address", "No address listed")
-                            rating = rest.get("rating", "No ratings yet")
-                            status = "🟢 Open Now" if rest.get("opening_hours", {}).get("open_now") else "🔴 Closed"
-                            
-                            with st.container(border=True):
-                                # 🟢 FIXED: Shifted all f-string identifiers completely outside of quotes
-                                st.markdown(f"### 🏪 {name}")
-                                st.write(f"📍 **Address:** {address}")
-                                st.write(f"⭐ **Google Rating:** {rating} / 5  |  Status: {status}")
-                    else:
-                        st.info("No matching locations found for that specific radius query criteria.")
-                        
-                except Exception as e:
-                    # 🟢 FIXED: Properly aligned exception handling catch inside the spinner block scope
+        
+        # Render Restored Data Output Profiles
+        for rest in restaurants:
+            name = rest.get("name", "Unknown Restaurant")
+            address = rest.get("formatted_address", "No address listed")
+            rating = rest.get("rating", "No ratings yet")
+            status = "🟢 Open Now" if rest.get("opening_hours", {}).get("open_now") else "🔴 Closed"
+            
+            with st.container(border=True):
+                # 🟢 FIXED: All f-string variables shifted completely outside the quotation mark parameters
+                st.markdown(f"### 🏪 {name}")
+                st.write(f"📍 **Address:** {address}")
+                st.write(f"⭐ **Google Rating:** {rating} / 5  |  Status: {status}")
+    else:
+        st.info("No matching locations found for that specific radius query criteria.")
+        
+except Exception as e:
+    # 🟢 FIXED: Re-aligned exception catcher block depth to perfectly balance out your backend try scope
+    st.error(f"Failed to communicate with Google Places interface: {e}")
+
                     st.error(f"Failed to communicate with Google Places interface: {e}")
