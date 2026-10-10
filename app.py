@@ -36,44 +36,41 @@ def search_recipes_by_ingredients(ingredients_string):
         st.error(f"Error fetching recipe database query: {e}")
         return []
 
-
-    # # 1. Unified User Search Trigger Engine
-    if st.button("Generate Home Recipes", type="primary", key="cook_tab_primary_generator"):
-        if not user_ingredients:
-            st.warning("Please input ingredients to match!")
+# # 1. Unified User Search Trigger Engine
+if st.button("Generate Home Recipes", type="primary", key="cook_tab_primary_generator"):
+    if not user_ingredients:
+        st.warning("Please input ingredients to match!")
+    else:
+        SPOONACULAR_API_KEY = st.secrets.get("SPOONACULAR_API_KEY", "").strip()
+        
+        if not SPOONACULAR_API_KEY:
+            st.error("🛑 Connection Aborted: Your Spoonacular API Key is missing or unconfigured!")
         else:
-            SPOONACULAR_API_KEY = st.secrets.get("SPOONACULAR_API_KEY", "").strip()
-            
-            if not SPOONACULAR_API_KEY:
-                st.error("🛑 Connection Aborted: Your Spoonacular API Key is missing or unconfigured!")
-            else:
-        with st.spinner("Searching and parsing recipe instructions..."):
-            raw_results = search_recipes_by_ingredients(user_ingredients)
-            
-            top_3_raw = raw_results[:3]
-            hydrated_recipes = []
-            
-            for item in top_3_raw:
-                # 🟢 FIXED: Removed the extra closing parenthesis
-                full_detail = get_recipe_details(item.get("id"))
+            # 🟢 FIXED: Kept this block aligned cleanly on a single level depth margin
+            with st.spinner("Searching and parsing recipe instructions..."):
+                raw_results = search_recipes_by_ingredients(user_ingredients)
                 
-                # Check if the deep hydration query worked successfully
-                if full_detail and "api_quota_blocked" not in full_detail:
-                    full_detail["usedIngredients"] = item.get("usedIngredients", [])
-                    full_detail["missedIngredients"] = item.get("missedIngredients", [])
-                    hydrated_recipes.append(full_detail)
-                else:
-                    # 🟢 QUOTA / ERROR FALLBACK: Build a custom hybrid profile from the raw data
-                    fallback_profile = {
-                        "title": item.get("title", "Delicious Match Option"),
-                        "image": item.get("image", ""),
-                        "usedIngredients": item.get("usedIngredients", []),
-                        "missedIngredients": item.get("missedIngredients", []),
-                        "quota_notice": True
-                    }
-                    hydrated_recipes.append(fallback_profile)
-            
-            st.session_state.recipes = hydrated_recipes
+                top_3_raw = raw_results[:3]
+                hydrated_recipes = []
+                
+                for item in top_3_raw:
+                    full_detail = get_recipe_details(item.get("id"))
+                    
+                    if full_detail and "api_quota_blocked" not in full_detail:
+                        full_detail["usedIngredients"] = item.get("usedIngredients", [])
+                        full_detail["missedIngredients"] = item.get("missedIngredients", [])
+                        hydrated_recipes.append(full_detail)
+                    else:
+                        fallback_profile = {
+                            "title": item.get("title", "Delicious Match Option"),
+                            "image": item.get("image", ""),
+                            "usedIngredients": item.get("usedIngredients", []),
+                            "missedIngredients": item.get("missedIngredients", []),
+                            "quota_notice": True
+                        }
+                        hydrated_recipes.append(fallback_profile)
+                
+                st.session_state.recipes = hydrated_recipes
 
     # 🟢 Render Active Hydrated Cards Below Search Operation (Indented 4 spaces to stay inside with tab_cook)
     if st.session_state.recipes:
