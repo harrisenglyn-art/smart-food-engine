@@ -3,6 +3,19 @@ import requests
 
 # --- 1. CONFIGURATION & ENCRYPTED KEYS ---
 SPOONACULAR_API_KEY = st.secrets.get("SPOONACULAR_KEY", "")
+def get_recipe_details(recipe_id):
+    """Fetches the full recipe payload, explicitly hydrating instructions."""
+    url = f"https://spoonacular.com{recipe_id}/information"
+    # Ensure this matches whatever variable name you used for your Spoonacular API key
+    params = {"apiKey": SPOONACULAR_API_KEY} 
+    
+    try:
+        response = requests.get(url, params=params)
+        return response.json()
+    except Exception as e:
+        st.error(f"Error fetching recipe instructions: {e}")
+        return {}
+
 
 st.set_page_config(page_title="Smart Food Engine", page_icon="🍔", layout="centered")
 
