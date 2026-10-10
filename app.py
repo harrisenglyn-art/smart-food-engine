@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 
 # --- 1. CONFIGURATION & ENCRYPTED KEYS ---
-SPOONACULAR_API_KEY = st.secrets.get("SPOONACULAR_KEY", "")
+SPOONACULAR_API_KEY = st.secrets.get("SPOONACULAR_API_KEY", "")
 def get_recipe_details(recipe_id):
     """Fetches the full recipe payload, explicitly hydrating instructions."""
     url = f"https://spoonacular.com{recipe_id}/information"
@@ -100,29 +100,35 @@ else:
             health_goal = st.selectbox("Dietary Targets", ["None", "Gluten Free", "Ketogenic", "Vegan", "Vegetarian"], key="h_cook")
             servings = st.number_input("Number of Servings Needed", min_value=1, max_value=20, value=2, step=1, key="s_cook")
             
-        max_time = st.slider("Max Prep/Cooking Time (Minutes)", min_value=10, max_value=120, value=60, step=5, key="t_cook")
-# # 1. Unified User Search Trigger
-if st.button("Generate Home Recipes", type="primary"):
-    if not user_ingredients:
-        st.warning("Please input ingredients to match!")
-    else:
-        # Secure the API Key BEFORE running any API calls
-        SPOONACULAR_API_KEY = st.secrets.get("SPOONACULAR_API_KEY", "").strip()
-        
-        if not SPOONACULAR_API_KEY or SPOONACULAR_API_KEY == "PASTE_YOUR_ACTIVE_SPOONACULAR_KEY_HERE":
-            st.error("🛑 Connection Aborted: Your Spoonacular API Key is completely missing or unconfigured!")
+    # (This lines up with your existing code on lines 102-103)
+    max_time = st.slider("Max Prep/Cooking Time (Minutes)", min_value=10, max_value=120, value=60, step=5, key="t_c")
+
+    # # 1. Unified User Search Trigger (Indented 4 spaces to stay inside tab_cook)
+    if st.button("Generate Home Recipes", type="primary"):
+        if not user_ingredients:
+            st.warning("Please input ingredients to match!")
         else:
-            # Everything is valid, proceed to fetch and hydrate data
-            with st.spinner("Searching and parsing recipe instructions..."):
-                # Fetch basic matching lists
-                raw_results = search_recipes_by_ingredients(user_ingredients)
-                
-                # Hydrate the basic recipes with full step-by-step instructions
-                hydrated_recipes = []
+            # Secure the API Key BEFORE running any API calls
+            SPOONACULAR_API_KEY = st.secrets.get("SPOONACULAR_API_KEY", "").strip()
+            
+            # Simplified safety check to resolve your scenario B secrets issue
+            if not SPOONACULAR_API_KEY:
+                st.error("🛑 Connection Aborted: Your Spoonacular API Key is completely missing or unconfigured in your Streamlit Cloud Secrets dashboard!")
+            else:
+                # Everything is valid, proceed to fetch and hydrate data
+                with st.spinner("Searching and parsing recipe instructions..."):
+                    # Fetch basic matching lists
+                    raw_results = search_recipes_by_ingredients(user_ingredients)
+                    
+                    # Hydrate the basic recipes with full step-by-step instructions
+                    hydrated_recipes = []
                 for item in raw_results:
                     full_detail = get_recipe_details(item["id"])
                     if full_detail:
                         hydrated_recipes.append(full_detail)
+                    
+                # Save the fully detailed recipes to session state for the UI cards
+                st.session_state.recipes = hydrated_recipes
                 
                 # 🟢 FINISH THE BLOCK: Save the data so your cards can read it
                 st.session_state.recipes = hydrated_recipes
