@@ -130,14 +130,14 @@ if st.button("Generate Home Recipes", type="primary"):
                                         
                 # 🟢 FIX 1: Set correct production API path destination endpoint URL
                 url = "https://api.spoonacular.com/recipes/complexSearch"
-                    params = {
+                params = {
                         "apiKey": SPOONACULAR_API_KEY,
                         "query": ingredients,
                         "maxReadyTime": max_time,
                         "addRecipeInformation": True,
                         "fillIngredients": True,  
                         "number": 3               
-                    }
+                }
                     if health_goal != "None":
                         params["diet"] = health_goal.lower().replace(" ", "")
                     if cuisine_cook != "Any":
