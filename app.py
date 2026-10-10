@@ -74,7 +74,7 @@ def search_recipes_by_ingredients(ingredients_string):
                     
                     st.session_state.recipes = hydrated_recipes
 
-    # Render Active Hydrated Cards Below Search Operation
+    # 🟢 Render Active Hydrated Cards Below Search Operation (Indented 4 spaces to stay inside with tab_cook)
     if st.session_state.recipes:
         st.markdown("---")
         st.subheader("🍳 Top 3 Recommended Match Options")
@@ -85,17 +85,15 @@ def search_recipes_by_ingredients(ingredients_string):
             with st.expander(f"📖 {recipe_title}", expanded=True):
                 if recipe.get("image"):
                     st.image(recipe["image"], use_container_width=True)
-                # --- TWO INITIAL OPTIONS: THE TOP NAVIGATION TABS ---
-# 🟢 MAKE SURE THIS LINE EXISTS ABOVE LINE 90 AND LINE 137!
-tab_cook, tab_go_out = st.tabs(["🔍 Cook at Home", "🚗 Go Out to Eat"])
-# If the fallback took over, notify the user cleanly
-if recipe.get("quota_notice"):
-    st.warning("⚠️ Note: Live step extraction is temporarily unavailable due to testing daily limit caps. Showing ingredient list metrics only:")
                 
-# --- 🥦 SECTION A: INGREDIENTS LIST ---
-st.markdown("### 🛒 Ingredients Required")
-used_ings = recipe.get("usedIngredients", [])
-missed_ings = recipe.get("missedIngredients", [])
+                # If the fallback took over, notify the user cleanly
+                if recipe.get("quota_notice"):
+                    st.warning("⚠️ Note: Live step extraction is temporarily unavailable due to testing daily limit caps. Showing ingredient list metrics only:")
+                
+                # --- 🥦 SECTION A: INGREDIENTS LIST ---
+                st.markdown("### 🛒 Ingredients Required")
+                used_ings = recipe.get("usedIngredients", [])
+                missed_ings = recipe.get("missedIngredients", [])
                 
                 col_ing1, col_ing2 = st.columns(2)
                 with col_ing1:
@@ -112,9 +110,7 @@ missed_ings = recipe.get("missedIngredients", [])
                             st.write(f"- {ing.get('original', ing.get('name'))}")
                     else:
                         st.write("- None! You have everything!")
-                
-                st.markdown("---")
-                
+
                 # --- 📋 SECTION B: STEP-BY-STEP INSTRUCTIONS ---
                 if not recipe.get("quota_notice"):
                     st.markdown("### 📋 Step-by-Step Instructions")
