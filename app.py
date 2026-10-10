@@ -85,7 +85,10 @@ def search_recipes_by_ingredients(ingredients_string):
             with st.expander(f"📖 {recipe_title}", expanded=True):
                 if recipe.get("image"):
                     st.image(recipe["image"], use_container_width=True)
-                
+                # --- TWO INITIAL OPTIONS: THE TOP NAVIGATION TABS ---
+# 🟢 MAKE SURE THIS LINE EXISTS ABOVE LINE 90 AND LINE 137!
+tab_cook, tab_go_out = st.tabs(["🔍 Cook at Home", "🚗 Go Out to Eat"])
+
                 # If the fallback took over, notify the user cleanly
                 if recipe.get("quota_notice"):
                     st.warning("⚠️ Note: Live step extraction is temporarily unavailable due to testing daily limit caps. Showing ingredient list metrics only:")
@@ -131,6 +134,10 @@ def search_recipes_by_ingredients(ingredients_string):
                         st.write(recipe["instructions"])
                     else:
                         st.write("Mix ingredients well and cook thoroughly according to taste!")
+
+# --- TWO INITIAL OPTIONS: THE TOP NAVIGATION TABS ---
+# 🟢 MAKE SURE THIS LINE EXISTS ABOVE LINE 90 AND LINE 137!
+tab_cook, tab_go_out = st.tabs(["🔍 Cook at Home", "🚗 Go Out to Eat"])
 # =============================================================================
 # 🚗 TAB 2: GO OUT TO EAT (RESTORED WITH GOOGLE PLACES API)
 # =============================================================================
