@@ -16,7 +16,7 @@ def get_recipe_details(recipe_id):
 def search_recipes_by_ingredients(ingredients_string):
     """Fetches matching recipes from Spoonacular based on matching raw text lists."""
     SPOONACULAR_API_KEY = st.secrets.get("SPOONACULAR_API_KEY", "").strip()
-    url = "https://spoonacular.comfindByIngredients"
+    url = "https://spoonacular.com"
     params = {
         "apiKey": SPOONACULAR_API_KEY,
         "ingredients": ingredients_string,
