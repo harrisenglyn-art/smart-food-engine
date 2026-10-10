@@ -297,10 +297,6 @@ with tab_go_out:
                         response = requests.get(places_url, params=places_params)
                         places_data = response.json()
                         restaurants = places_data.get("results", [])
-                    
-                    if restaurants:
-                        # 🟢 FIXED: Shifted f-string identifier completely outside of quotes
-                        st.success(f"Found {len(restaurants)} excellent matching options nearby!")
                         
                         # Render Restored Data Output Profiles
                         for rest in restaurants:
