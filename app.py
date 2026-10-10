@@ -88,10 +88,9 @@ def search_recipes_by_ingredients(ingredients_string):
                 # --- TWO INITIAL OPTIONS: THE TOP NAVIGATION TABS ---
 # 🟢 MAKE SURE THIS LINE EXISTS ABOVE LINE 90 AND LINE 137!
 tab_cook, tab_go_out = st.tabs(["🔍 Cook at Home", "🚗 Go Out to Eat"])
-
-                # If the fallback took over, notify the user cleanly
-                if recipe.get("quota_notice"):
-                st.warning("⚠️ Note: Live step extraction is temporarily unavailable due to testing daily limit caps. Showing ingredient list metrics only:")
+# If the fallback took over, notify the user cleanly
+if recipe.get("quota_notice"):
+    st.warning("⚠️ Note: Live step extraction is temporarily unavailable due to testing daily limit caps. Showing ingredient list metrics only:")
                 
                 # --- 🥦 SECTION A: INGREDIENTS LIST ---
                 st.markdown("### 🛒 Ingredients Required")
