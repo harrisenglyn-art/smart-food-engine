@@ -284,7 +284,7 @@ with tab_go_out:
                 with st.spinner("Querying Google Places dataset for matching venues..."):
                     
                     # 🟢 SYSTEM FIX: Clean text query optimization format that Google recognizes instantly
-                    places_url = "https://maps.googleapis.com/maps/api/place/textsearch/json"
+                    places_url = f"https://maps.googleapis.com/maps/api/place/textsearch/json"
                     query_string = f"{cuisine_takeout} near {takeout_location}"
                     
                     places_params = {
