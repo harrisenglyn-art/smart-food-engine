@@ -60,7 +60,7 @@ with tab_cook:
         servings = st.number_input("Number of Servings Needed", min_value=1, max_value=20, value=2, step=1, key="s_cook")
 
     max_time = st.slider("Max Prep/Cooking Time (Minutes)", min_value=10, max_value=120, value=60, step=5, key="t_c")
-    # # 1. Unified User Search Trigger Engine
+       # # 1. Unified User Search Trigger Engine
     if st.button("Generate Home Recipes", type="primary", key="cook_tab_primary_generator"):
         if not user_ingredients:
             st.warning("Please input ingredients to match!")
@@ -73,25 +73,66 @@ with tab_cook:
                 with st.spinner("Searching and parsing recipe instructions..."):
                     raw_results = search_recipes_by_ingredients(user_ingredients)
                     
+                    # 🟢 FORCE FIX 1: Grab ONLY the top 3 options from the initial ingredient search
+                    top_3_raw = raw_results[:3]
+                    
                     hydrated_recipes = []
-                    for item in raw_results:
+                    for item in top_3_raw:
                         full_detail = get_recipe_details(item["id"])
                         if full_detail:
+                            # Merge ingredient matching metrics into the full detail dictionary
+                            full_detail["usedIngredients"] = item.get("usedIngredients", [])
+                            full_detail["missedIngredients"] = item.get("missedIngredients", [])
                             hydrated_recipes.append(full_detail)
                     
                     st.session_state.recipes = hydrated_recipes
 
     # Render Active Hydrated Cards Below Search Operation
     if st.session_state.recipes:
+        st.markdown("---")
+        st.subheader("🍳 Top 3 Recommended Match Options")
+        
         for recipe in st.session_state.recipes:
-            with st.expander(f"📖 {recipe.get('title', 'Unknown Recipe')}"):
+            # 🟢 FORCE FIX 2: Correctly pull the proper title key
+            recipe_title = recipe.get("title") or recipe.get("name") or "Delicious Match Option"
+            
+            with st.expander(f"📖 {recipe_title}", expanded=True):
                 if recipe.get("image"):
-                    st.image(recipe["image"])
+                    st.image(recipe["image"], use_container_width=True)
                 
+                # --- 🥦 SECTION A: INGREDIENTS LIST MATRIX ---
+                st.markdown("### 🛒 Ingredients Required")
+                
+                used_ings = recipe.get("usedIngredients", [])
+                missed_ings = recipe.get("missedIngredients", [])
+                
+                if used_ings or missed_ings:
+                    col_ing1, col_ing2 = st.columns(2)
+                    with col_ing1:
+                        st.markdown("**🟢 Ingredients You Have:**")
+                        for ing in used_ings:
+                            st.write(f"- {ing.get('original', ing.get('name'))}")
+                    with col_ing2:
+                        st.markdown("**🔴 Ingredients You Need to Buy:**")
+                        if missed_ings:
+                            for ing in missed_ings:
+                                st.write(f"- {ing.get('original', ing.get('name'))}")
+                        else:
+                            st.write("- None! You have everything!")
+                else:
+                    # Fallback if displaying a text file recipe profile layout
+                    extended_ingredients = recipe.get("extendedIngredients", [])
+                    for ing in extended_ingredients:
+                        st.write(f"- {ing.get('original')}")
+                
+                st.markdown("---")
+                
+                # --- 📋 SECTION B: STEP-BY-STEP INSTRUCTIONS ---
                 st.markdown("### 📋 Step-by-Step Instructions")
                 analyzed = recipe.get("analyzedInstructions")
                 
                 if analyzed and isinstance(analyzed, list) and len(analyzed) > 0:
+                    # Target the instruction nested block container list directly
                     steps = analyzed[0].get("steps", [])
                     if steps:
                         for step in steps:
@@ -102,6 +143,7 @@ with tab_cook:
                     st.write(recipe["instructions"])
                 else:
                     st.write("Mix ingredients well and cook thoroughly according to taste!")
+
 # =============================================================================
 # 🚗 TAB 2: GO OUT TO EAT (RESTORED WITH GOOGLE PLACES API)
 # =============================================================================
