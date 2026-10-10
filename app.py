@@ -277,31 +277,26 @@ with tab_go_out:
             st.warning("Please provide a location target to route coordinates!")
         else:
             GOOGLE_PLACES_API_KEY = st.secrets.get("GOOGLE_PLACES_API_KEY", "").strip()
-        if not GOOGLE_PLACES_API_KEY:
-            st.error("🛑 Connection Aborted: Your GOOGLE_PLACES_API_KEY is missing or unconfigured in your Cloud Settings panel!")
-        else:
-            with st.spinner("Querying Google Places dataset for matching venues..."):
-                # 🟢 FIXED: All parameters cleanly indented 16 spaces to sit inside with st.spinner
-                # Convert miles to meters for Google's API requirement (1 mile ≈ 1609 meters)
-                radius_meters = search_radius * 1609
-                
-                # 🟢 FIXED: Ensured URL formatting has no typo gaps
-                places_url = "https://maps.googleapis.com/maps/api/place/textsearch/json"
-                
-                # 🟢 FIXED: Shifted f-string literal selector completely outside of string quotes
-                query_string = f"{cuisine_takeout} restaurant near {takeout_location}"
-                
-                places_params = {
-                    "query": query_string,
-                    "radius": radius_meters,
-                    "key": GOOGLE_PLACES_API_KEY
-                }
-                
-                try:
-                    # 🟢 FIXED: Aligned execution blocks securely inside context scope
-                    response = requests.get(places_url, params=places_params)
-                    places_data = response.json()
-                    restaurants = places_data.get("results", [])
+            
+            if not GOOGLE_PLACES_API_KEY:
+                st.error("🛑 Connection Aborted: Your GOOGLE_PLACES_API_KEY is missing or unconfigured in your Cloud Settings panel!")
+            else:
+                with st.spinner("Querying Google Places dataset for matching venues..."):
+                    
+                    # 🟢 THE FIX: Bake the radius string directly into the text query!
+                    # This tells Google exactly what you mean without requiring complex latitude/longitude math.
+                    places_url = "https://maps.googleapis.com/maps/api/place/textsearch/json"
+                    query_string = f"{cuisine_takeout} restaurant within {search_radius} miles of {takeout_location}"
+                    
+                    places_params = {
+                        "query": query_string,
+                        "key": GOOGLE_PLACES_API_KEY
+                    }
+                    
+                    try:
+                        response = requests.get(places_url, params=places_params)
+                        places_data = response.json()
+                        restaurants = places_data.get("results", [])
                     
                     if restaurants:
                         # 🟢 FIXED: Shifted f-string identifier completely outside of quotes
