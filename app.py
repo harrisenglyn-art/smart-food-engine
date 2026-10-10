@@ -37,7 +37,7 @@ def search_recipes_by_ingredients(ingredients_string):
         return []
 
 # # 1. Unified User Search Trigger Engine
-if st.button("Generate Home Recipes", type="primary", key="cook_tab_primary_generator"):
+if st.button("Generate Home Recipes", type="primary", key="cook_tab_primary_generator_v3"):
     if not user_ingredients:
         st.warning("Please input ingredients to match!")
     else:
