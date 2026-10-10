@@ -6,7 +6,7 @@ def get_recipe_details(recipe_id):
     SPOONACULAR_API_KEY = st.secrets.get("SPOONACULAR_API_KEY", "").strip()
     
     # 🟢 VERIFIED URL ALIGNMENT CONSTRUCTION
-    url = f"https://api.spoonacular.com/recipes/{recipe_id}/information"
+    url = "https://api.spoonacular.com/recipes/{recipe_id}/information"
     params = {"apiKey": SPOONACULAR_API_KEY}
     
     try:
