@@ -241,7 +241,7 @@ with tab_go_out:
                 radius_meters = search_radius * 1609
                 
                 # 🟢 FIXED: Ensured URL formatting has no typo gaps
-                places_url = "https://googleapis.com"
+                places_url = "https://maps.googleapis.com/maps/api/place/textsearch/json"
                 
                 # 🟢 FIXED: Shifted f-string literal selector completely outside of string quotes
                 query_string = f"{cuisine_takeout} restaurant near {takeout_location}"
