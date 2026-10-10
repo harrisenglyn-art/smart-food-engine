@@ -158,34 +158,34 @@ with tab_cook:
         cleaned_ingredients_list = [item.split(" (")[0].lower() for item in selected_display_items]
         user_ingredients = ", ".join(cleaned_ingredients_list)
 
-    col1, col2 = st.columns(2)
-    with col1:
-        cuisine_cook = st.selectbox(
-            "Cuisine Choice", 
-            [
-                "Any", "African", "American", "Asian", "British", "Cajun", "Caribbean", 
-                "Chinese", "Eastern European", "European", "French", "German", "Greek", 
-                "Indian", "Irish", "Italian", "Japanese", "Jewish", "Korean", 
-                "Latin American", "Mediterranean", "Mexican", "Middle Eastern", "Nordic", 
-                "Southern", "Spanish", "Thai", "Vietnamese"
-            ],
-            key="c_cook_dropdown"
-        )
-        mood_cook = st.selectbox("Current Mood", ["Comfort Food", "Quick & Easy", "Healthy & Light", "Cozy"], key="m_cook_dropdown")
+        col1, col2 = st.columns(2)
+        with col1:
+            cuisine_cook = st.selectbox(
+                "Cuisine Choice", 
+                [
+                    "Any", "African", "American", "Asian", "British", "Cajun", "Caribbean", 
+                    "Chinese", "Eastern European", "European", "French", "German", "Greek", 
+                    "Indian", "Irish", "Italian", "Japanese", "Jewish", "Korean", 
+                    "Latin American", "Mediterranean", "Mexican", "Middle Eastern", "Nordic", 
+                    "Southern", "Spanish", "Thai", "Vietnamese"
+                ],
+                key="c_cook_dropdown"
+            )
+            mood_cook = st.selectbox("Current Mood", ["Comfort Food", "Quick & Easy", "Healthy & Light", "Cozy"], key="m_cook_dropdown")
         
-    with col2:
-        health_goal = st.selectbox(
-            "Dietary Targets", 
-            [
-                "None", "Gluten Free", "Ketogenic", "Vegetarian", "Lacto-Vegetarian", 
-                "Ovo-Vegetarian", "Vegan", "Pescetarian", "Paleo", "Primal", 
-                "Low FODMAP", "Whole30"
-            ], 
-            key="h_goal_dropdown"
-        )
-        servings = st.number_input("Number of Servings Needed", min_value=1, max_value=20, value=2, step=1, key="s_cook_input")
+        with col2:
+            health_goal = st.selectbox(
+                "Dietary Targets", 
+                [
+                    "None", "Gluten Free", "Ketogenic", "Vegetarian", "Lacto-Vegetarian", 
+                    "Ovo-Vegetarian", "Vegan", "Pescetarian", "Paleo", "Primal", 
+                    "Low FODMAP", "Whole30"
+                ], 
+                key="h_goal_dropdown"
+            )
+            servings = st.number_input("Number of Servings Needed", min_value=1, max_value=20, value=2, step=1, key="s_cook_input")
 
-    max_time = st.slider("Max Prep/Cooking Time (Minutes)", min_value=10, max_value=120, value=60, step=5, key="t_c_slider")
+        max_time = st.slider("Max Prep/Cooking Time (Minutes)", min_value=10, max_value=120, value=60, step=5, key="t_c_slider")
 
     # 🟢 STEP 2: UNIFIED USER SEARCH TRIGGER (Everything nested cleanly inside)
     if st.button("Generate Home Recipes", type="primary", key="cook_tab_primary_generator_v3"):
