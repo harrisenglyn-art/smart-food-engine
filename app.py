@@ -90,17 +90,17 @@ else:
     with tab_cook:
         st.header("Cook a Perfect Meal")
 # 🟢 Add this right ABOVE your "Unified User Search Trigger" button block:
-user_ingredients = st.text_input("Enter your available ingredients (separated by commas):", key="ingredients_input")
+        user_ingredients = st.text_input("Enter your available ingredients (separated by commas):", key="ingredients_input")
         
-col1, col2 = st.columns(2)
-    with col1:
-        cuisine_cook = st.selectbox("Cuisine Choice", ["Any", "Italian", "Mexican", "Asian", "American", "Mediterranean"], key="c_cook")
-        mood_cook = st.selectbox("Current Mood", ["Comfort Food", "Quick & Easy", "Healthy & Light", "Cozy"], key="m_cook")
-    with col2:
-        health_goal = st.selectbox("Dietary Targets", ["None", "Gluten Free", "Ketogenic", "Vegan", "Vegetarian"], key="h_cook")
-        servings = st.number_input("Number of Servings Needed", min_value=1, max_value=20, value=2, step=1, key="s_cook")
+        col1, col2 = st.columns(2)
+        with col1:
+            cuisine_cook = st.selectbox("Cuisine Choice", ["Any", "Italian", "Mexican", "Asian", "American", "Mediterranean"], key="c_cook")
+            mood_cook = st.selectbox("Current Mood", ["Comfort Food", "Quick & Easy", "Healthy & Light", "Cozy"], key="m_cook")
+        with col2:
+            health_goal = st.selectbox("Dietary Targets", ["None", "Gluten Free", "Ketogenic", "Vegan", "Vegetarian"], key="h_cook")
+            servings = st.number_input("Number of Servings Needed", min_value=1, max_value=20, value=2, step=1, key="s_cook")
             
-max_time = st.slider("Max Prep/Cooking Time (Minutes)", min_value=10, max_value=120, value=60, step=5, key="t_cook")
+        max_time = st.slider("Max Prep/Cooking Time (Minutes)", min_value=10, max_value=120, value=60, step=5, key="t_cook")
 # # 1. Unified User Search Trigger
 if st.button("Generate Home Recipes", type="primary"):
     if not user_ingredients:
