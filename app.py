@@ -102,14 +102,67 @@ with tab_cook:
                 else:
                     st.write("Mix ingredients well and cook thoroughly according to taste!")
 # =============================================================================
-# 🚗 TAB 2: GO OUT TO EAT
+# 🚗 TAB 2: GO OUT TO EAT (RESTORED WITH GOOGLE PLACES API)
 # =============================================================================
 with tab_go_out:
     st.header("Order Take Out or Delivery")
     st.write("Find excellent choices nearby to satisfy your cravings without cooking!")
     
-    # 🟢 PLACE ALL YOUR TAKE OUT INPUT PARAMETERS & MAP INTERACTION CODE DIRECTLY HERE
-    takeout_zip = st.text_input("Enter Delivery ZIP Code or Address:", key="takeout_location_tracker")
-    cuisine_takeout = st.selectbox("What food type are you hunting?", ["Any", "Burgers", "Pizza", "Sushi", "Thai", "Tacos"], key="t_cuisine")
+    # 🟢 RESTORED USER INPUT FIELDS
+    col1_out, col2_out = st.columns(2)
+    with col1_out:
+        takeout_location = st.text_input("Enter Delivery ZIP Code, City, or Full Address:", value="90036", key="takeout_location_tracker")
+        cuisine_takeout = st.selectbox("What food type are you hunting?", ["Pizza", "Burgers", "Sushi", "Thai", "Tacos", "Indian", "Healthy Salad"], key="t_cuisine")
     
-    st.info("Restaurant recommendations mapping modules will deploy securely right inside this panel area.")
+    with col2_out:
+        search_radius = st.slider("Search Distance Radius (Miles)", min_value=1, max_value=25, value=5, step=1, key="t_radius")
+        price_range = st.select_slider("Price Level Target", options=["$", "$$", "$$$", "$$$$"], value="$$", key="t_price")
+
+    # 1. Google Places Search Trigger Engine
+    if st.button("Find Nearby Restaurants", type="primary", key="takeout_tab_primary_generator"):
+        if not takeout_location:
+            st.warning("Please provide a location target to route coordinates!")
+        else:
+            GOOGLE_PLACES_API_KEY = st.secrets.get("GOOGLE_PLACES_API_KEY", "").strip()
+            
+            if not GOOGLE_PLACES_API_KEY:
+                st.error("🛑 Connection Aborted: Your GOOGLE_PLACES_API_KEY is missing or unconfigured in your Cloud Settings panel!")
+            else:
+                with st.spinner("Querying Google Places dataset for matching venues..."):
+                    # 🛠️ GOOGLE PLACES TEXT SEARCH ENDPOINT CALL
+                    # Convert miles to meters for Google's API requirement (1 mile ≈ 1609 meters)
+                    radius_meters = search_radius * 1609
+                    
+                    places_url = "https://googleapis.com"
+                    query_string = f"{cuisine_takeout} restaurant near {takeout_location}"
+                    
+                    places_params = {
+                        "query": query_string,
+                        "radius": radius_meters,
+                        "key": GOOGLE_PLACES_API_KEY
+                    }
+                    
+                    try:
+                        response = requests.get(places_url, params=places_params)
+                        places_data = response.json()
+                        restaurants = places_data.get("results", [])
+                        
+                        if restaurants:
+                            st.success(f"Found {len(restaurants)} excellent matching options nearby!")
+                            
+                            # Render Restored Data Output Profiles
+                            for rest in restaurants:
+                                name = rest.get("name", "Unknown Restaurant")
+                                address = rest.get("formatted_address", "No address listed")
+                                rating = rest.get("rating", "No ratings yet")
+                                status = "🟢 Open Now" if rest.get("opening_hours", {}).get("open_now") else "🔴 Closed"
+                                
+                                with st.container(border=True):
+                                    st.markdown(f"### 🏪 {name}")
+                                    st.write(f"📍 **Address:** {address}")
+                                    st.write(f"⭐ **Google Rating:** {rating} / 5  |  Status: {status}")
+                        else:
+                            st.info("No matching locations found for that specific radius query criteria.")
+                            
+                    except Exception as e:
+                        st.error(f"Failed to communicate with Google Places interface: {e}")
