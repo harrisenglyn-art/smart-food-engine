@@ -48,42 +48,6 @@ def search_recipes_by_ingredients(ingredients_string, cuisine="Any", diet="None"
     except Exception as e:
         st.error(f"Error fetching filtered recipe database query: {e}")
         return []
-
-# # 1. Unified User Search Trigger Engine
-if st.button("Generate Home Recipes", type="primary", key="cook_tab_primary_generator_v3"):
-    if not user_ingredients:
-        st.warning("Please input ingredients to match!")
-    else:
-        SPOONACULAR_API_KEY = st.secrets.get("SPOONACULAR_API_KEY", "").strip()
-        
-        if not SPOONACULAR_API_KEY:
-            st.error("🛑 Connection Aborted: Your Spoonacular API Key is missing or unconfigured!")
-        else:
-            # 🟢 FIXED: Kept this block aligned cleanly on a single level depth margin
-            with st.spinner("Searching and parsing recipe instructions..."):
-                raw_results = search_recipes_by_ingredients(user_ingredients)
-                
-                top_3_raw = raw_results[:3]
-                hydrated_recipes = []
-                
-                for item in top_3_raw:
-                    full_detail = get_recipe_details(item.get("id"))
-                    
-                    if full_detail and "api_quota_blocked" not in full_detail:
-                        full_detail["usedIngredients"] = item.get("usedIngredients", [])
-                        full_detail["missedIngredients"] = item.get("missedIngredients", [])
-                        hydrated_recipes.append(full_detail)
-                    else:
-                        fallback_profile = {
-                            "title": item.get("title", "Delicious Match Option"),
-                            "image": item.get("image", ""),
-                            "usedIngredients": item.get("usedIngredients", []),
-                            "missedIngredients": item.get("missedIngredients", []),
-                            "quota_notice": True
-                        }
-                        hydrated_recipes.append(fallback_profile)
-                
-                st.session_state.recipes = hydrated_recipes
 # =============================================================================
 # 1. MAIN APP WORKSPACE HEADERS (Lines 74-81 Move Here!)
 # =============================================================================
