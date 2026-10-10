@@ -3,9 +3,9 @@ import streamlit as st
 import requests
 
 def get_recipe_details(recipe_id):
-    """Fetches full recipe metadata explicitly containing instruction step matrices."""
     SPOONACULAR_API_KEY = st.secrets.get("SPOONACULAR_API_KEY", "").strip()
-    url = f"https://spoonacular.com{recipe_id}/information"
+    # 🟢 Ensure there is a '/' after .com and after recipes
+    url = "https://api.spoonacular.com/recipes/{recipe_id}/information"
     params = {"apiKey": SPOONACULAR_API_KEY}
     try:
         response = requests.get(url, params=params)
@@ -14,9 +14,9 @@ def get_recipe_details(recipe_id):
         return {}
 
 def search_recipes_by_ingredients(ingredients_string):
-    """Fetches matching recipes from Spoonacular based on matching raw text lists."""
     SPOONACULAR_API_KEY = st.secrets.get("SPOONACULAR_API_KEY", "").strip()
-    url = "https://spoonacular.com"
+    # 🟢 Ensure there is a '/' after .com and after recipes
+    url = "https://spoonacular.comfindByIngredients"
     params = {
         "apiKey": SPOONACULAR_API_KEY,
         "ingredients": ingredients_string,
@@ -28,6 +28,7 @@ def search_recipes_by_ingredients(ingredients_string):
     except Exception as e:
         st.error(f"Error fetching recipe database query: {e}")
         return []
+
 # Initialize session memory arrays securely
 if "recipes" not in st.session_state:
     st.session_state.recipes = []
@@ -133,7 +134,9 @@ with tab_go_out:
                     # Convert miles to meters for Google's API requirement (1 mile ≈ 1609 meters)
                     radius_meters = search_radius * 1609
                     
-                    places_url = "https://googleapis.com"
+                    
+# 🟢 THE FIX (Ensure full slashes divide domains, services, and operations):
+                    places_url = "https://maps.googleapis.com/maps/api/place/textsearch/json"
                     query_string = f"{cuisine_takeout} restaurant near {takeout_location}"
                     
                     places_params = {
