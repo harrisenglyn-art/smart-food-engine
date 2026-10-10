@@ -125,18 +125,19 @@ tab_cook, tab_go_out = st.tabs(["🔍 Cook at Home", "🚗 Go Out to Eat"])
 # =============================================================================
 # 2. OPEN THE COOKING WORKSPACE
 # =============================================================================
+with tab_cook
+
+        st.header("Cook a Perfect Meal")
     
-    st.header("Cook a Perfect Meal")
-    
-    # 1. DEFINE THE ENGINE'S CATEGORIZED INGREDIENT LAUNCH DATASET
-    ingredient_catalog = {
-        "🥩 Proteins / Meats": ["Chicken", "Beef", "Pork", "Salmon", "Tuna", "Shrimp", "Eggs", "Tofu", "Bacon", "Turkey"],
-        "🥦 Vegetables": ["Garlic", "Onion", "Tomato", "Spinach", "Broccoli", "Bell Pepper", "Potato", "Carrot", "Zucchini", "Mushroom"],
-        "🌾 Grains & Rice": ["Pasta", "White Rice", "Brown Rice", "Quinoa", "Oats", "Bread", "Tortillas", "Flour", "Noodles"],
-        "🍎 Fruits": ["Lemon", "Lime", "Apple", "Banana", "Avocado", "Orange", "Strawberries", "Blueberries", "Pineapple"],
-        "🧀 Dairy & Alternatives": ["Butter", "Milk", "Cheddar Cheese", "Parmesan", "Mozzarella", "Yogurt", "Cream Cheese", "Almond Milk"],
-        "🧂 Pantry & Spices": ["Olive Oil", "Soy Sauce", "Honey", "Salt", "Black Pepper", "Oregano", "Cumin", "Paprika", "Garlic Powder"]
-    }
+        # 1. DEFINE THE ENGINE'S CATEGORIZED INGREDIENT LAUNCH DATASET
+        ingredient_catalog = {
+            "🥩 Proteins / Meats": ["Chicken", "Beef", "Pork", "Salmon", "Tuna", "Shrimp", "Eggs", "Tofu", "Bacon", "Turkey"],
+            "🥦 Vegetables": ["Garlic", "Onion", "Tomato", "Spinach", "Broccoli", "Bell Pepper", "Potato", "Carrot", "Zucchini", "Mushroom"],
+            "🌾 Grains & Rice": ["Pasta", "White Rice", "Brown Rice", "Quinoa", "Oats", "Bread", "Tortillas", "Flour", "Noodles"],
+            "🍎 Fruits": ["Lemon", "Lime", "Apple", "Banana", "Avocado", "Orange", "Strawberries", "Blueberries", "Pineapple"],
+            "🧀 Dairy & Alternatives": ["Butter", "Milk", "Cheddar Cheese", "Parmesan", "Mozzarella", "Yogurt", "Cream Cheese", "Almond Milk"],
+            "🧂 Pantry & Spices": ["Olive Oil", "Soy Sauce", "Honey", "Salt", "Black Pepper", "Oregano", "Cumin", "Paprika", "Garlic Powder"]
+        }
     
     # Flatten the catalog into a cleanly structured display list for the dropdown select row
     dropdown_options = []
