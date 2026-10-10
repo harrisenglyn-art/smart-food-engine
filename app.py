@@ -1,3 +1,66 @@
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib import colors
+import io
+
+def generate_recipe_pdf(recipe):
+    """Compiles title, ingredient columns, and comprehensive steps into an instant download-ready PDF file buffer."""
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter, rightMargin=54, leftMargin=54, topMargin=54, bottomMargin=54)
+    story = []
+    
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle(
+        'RecipeTitle', 
+        parent=styles['Heading1'], 
+        fontSize=24, 
+        textColor=colors.HexColor("#D32F2F"), 
+        spaceAfter=15
+    )
+    section_style = ParagraphStyle(
+        'RecipeSection', 
+        parent=styles['Heading2'], 
+        fontSize=14, 
+        textColor=colors.HexColor("#1976D2"), 
+        spaceBefore=10, 
+        spaceAfter=5
+    )
+    body_style = ParagraphStyle('RecipeBody', parent=styles['BodyText'], fontSize=10, spaceAfter=4)
+    
+    # Render Title Header
+    story.append(Paragraph(recipe.get("title", "Delicious Recommendation Option"), title_style))
+    story.append(Spacer(1, 10))
+    
+    # Render Ingredients Matrix
+    story.append(Paragraph("🛒 Ingredients Matrix", section_style))
+    for ing in recipe.get("usedIngredients", []) + recipe.get("missedIngredients", []):
+        story.append(Paragraph(f"• {ing.get('original', ing.get('name'))}", body_style))
+    if not recipe.get("usedIngredients") and not recipe.get("missedIngredients"):
+        for ing in recipe.get("extendedIngredients", []):
+            story.append(Paragraph(f"• {ing.get('original')}", body_style))
+            
+    story.append(Spacer(1, 15))
+    
+    # Render Step-by-Step Context Instructions
+    story.append(Paragraph("📋 Cooking Execution Steps", section_style))
+    analyzed = recipe.get("analyzedInstructions")
+    
+    if analyzed and isinstance(analyzed, list) and len(analyzed) > 0:
+        steps_list = analyzed[0].get("steps", [])
+        if steps_list:
+            for step in steps_list:
+                story.append(Paragraph(f"<b>Step {step.get('number')}:</b> {step.get('step')}", body_style))
+        else:
+            story.append(Paragraph("Directions are missing deep structural data row files.", body_style))
+    elif recipe.get("instructions"):
+        story.append(Paragraph(recipe["instructions"], body_style))
+    else:
+        story.append(Paragraph("Mix elements well and prepare thoroughly according to taste parameters.", body_style))
+        
+    doc.build(story)
+    buffer.seek(0)
+    return buffer
 import streamlit as st
 import requests
 # 🟢 INITIALIZE MEMORY ARRAYS SECURELY AT THE GLOBAL LAYER (Far left margin, no spaces)
@@ -138,70 +201,57 @@ with tab_cook:
     # 3. RENDER RECS (Lines 87-91 Stay Intended Here!)
     # =============================================================================
 
-    # 🟢 Render Active Hydrated Cards Below Search Operation (Indented 4 spaces to stay inside with tab_cook)
+    # Render Active Clean Cards Below Search Operation
     if st.session_state.recipes:
         st.markdown("---")
         st.subheader("🍳 Top 3 Recommended Match Options")
         
-        for recipe in st.session_state.recipes:
+        for index, recipe in enumerate(st.session_state.recipes):
             recipe_title = recipe.get("title") or "Delicious Match Option"
             
-            # 🟢 FIXED: Moved the f-string 'f' modifier to the correct side of the quotation marks
             with st.expander(f"📖 {recipe_title}", expanded=True):
+                # 1. Image Layout Element
                 if recipe.get("image"):
                     st.image(recipe["image"], use_container_width=True)
                 
-                # If the fallback took over, notify the user cleanly
-                if recipe.get("quota_notice"):
-                    st.warning("⚠️ Note: Live step extraction is temporarily unavailable due to testing daily limit caps. Showing ingredient list metrics only:")
-                
-                # --- 🥦 SECTION A: INGREDIENTS LIST ---
+                # 2. Side-by-Side Ingredient Breakdown Columns
                 st.markdown("### 🛒 Ingredients Required")
                 used_ings = recipe.get("usedIngredients", [])
                 missed_ings = recipe.get("missedIngredients", [])
                 
                 col_ing1, col_ing2 = st.columns(2)
-            with col_ing1:
-                st.markdown("**🟢 Ingredients You Have:**")
-                if used_ings:
-                    # 🟢 FIXED: Removed duplicate loop block and fixed f-string syntax positioning
-                    for ing in used_ings:
-                        st.write(f"- {ing.get('original', ing.get('name'))}")
-                else:
-                    st.write("- None listed")
+                with col_ing1:
+                    st.markdown("**🟢 Ingredients You Have:**")
+                    if used_ings:
+                        for ing in used_ings:
+                            st.write(f"- {ing.get('original', ing.get('name'))}")
+                    else:
+                        st.write("- None listed")
+                with col_ing2:
+                    st.markdown("**🔴 Ingredients You Need to Buy:**")
+                    if missed_ings:
+                        for ing in missed_ings:
+                            st.write(f"- {ing.get('original', ing.get('name'))}")
+                    else:
+                        st.write("- None! You have everything!")
                 
-            with col_ing2:
-                st.markdown("**🔴 Ingredients You Need to Buy:**")
-                if missed_ings:
-                    # 🟢 FIXED: Adjusted f-string syntax positioning outside quotes
-                    for ing in missed_ings:
-                        st.write(f"- {ing.get('original', ing.get('name'))}")
-                else:
-                    st.write("- None! You have everything!")
-        
-            st.markdown("---")
-        
-        # --- 📋 SECTION B: STEP-BY-STEP INSTRUCTIONS ---
-        if not recipe.get("quota_notice"):
-            st.markdown("### 📋 Step-by-Step Instructions")
-            analyzed = recipe.get("analyzedInstructions")
-            
-            if analyzed and isinstance(analyzed, list) and len(analyzed) > 0:
-                # 🟢 FIXED: Clean variable tracking structure
-                first_block = analyzed[0]
-                steps = first_block.get("steps", [])
+                st.markdown("---")
                 
-                if steps:
-                    for step in steps:
-                        # 🟢 FIXED: Shifted f-string literal selector completely outside of string quotes
-                        st.write(f"**Step {step.get('number')}:** {step.get('step')}")
-                else:
-                    st.write("Directions are missing structural data rows.")
-            elif recipe.get("instructions"):
-                st.write(recipe["instructions"])
-            else:
-                st.write("Mix ingredients well and cook thoroughly according to taste!")
-
+                # 🟢 3. INSTANT DOWNLOADABLE PDF BUTTON (Hides long text clutter on your site)
+                try:
+                    pdf_data = generate_recipe_pdf(recipe)
+                    clean_filename = recipe_title.lower().replace(" ", "_")
+                    
+                    st.download_button(
+                        label="📥 Download Printable Recipe Guide (PDF)",
+                        data=pdf_data,
+                        file_name=f"{clean_filename}_guide.pdf",
+                        mime="application/pdf",
+                        key=f"dl_pdf_btn_{index}_{recipe.get('id', index)}" # Fully unique context iteration key
+                    )
+                except Exception as e:
+                    st.error("Print layout compiling engine temporarily updating.")
+                    
 # =============================================================================
 # 🚗 TAB 2: GO OUT TO EAT (RESTORED WITH GOOGLE PLACES API)
 # =============================================================================
