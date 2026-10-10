@@ -188,21 +188,21 @@ with tab_cook:
         max_time = st.slider("Max Prep/Cooking Time (Minutes)", min_value=10, max_value=120, value=60, step=5, key="t_c_slider")
 
     # 🟢 STEP 2: UNIFIED USER SEARCH TRIGGER (Everything nested cleanly inside)
-    if st.button("Generate Home Recipes", type="primary", key="cook_tab_primary_generator_v3"):
-        if not user_ingredients:
-            st.warning("Please input ingredients to match!")
-        else:
-            with st.spinner("Searching and parsing recipe instructions..."):
-                # 🟢 FIXED: Kept all parameters perfectly indented to stay inside the button context loop
-                raw_results = search_recipes_by_ingredients(
-                    user_ingredients,
-                    cuisine=cuisine_cook,
-                    diet=health_goal,
-                    max_time=max_time
-                )
+        if st.button("Generate Home Recipes", type="primary", key="cook_tab_primary_generator_v3"):
+            if not user_ingredients:
+                st.warning("Please input ingredients to match!")
+            else:
+                with st.spinner("Searching and parsing recipe instructions..."):
+                    # 🟢 FIXED: Kept all parameters perfectly indented to stay inside the button context loop
+                    raw_results = search_recipes_by_ingredients(
+                        user_ingredients,
+                        cuisine=cuisine_cook,
+                        diet=health_goal,
+                        max_time=max_time
+                    )
 
-                top_3_raw = raw_results[:3]
-                hydrated_recipes = []
+                    top_3_raw = raw_results[:3]
+                    hydrated_recipes = []
                 
                 for item in top_3_raw:
                     full_detail = get_recipe_details(item.get("id"))
