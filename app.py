@@ -209,8 +209,12 @@ with tab_cook:
         for index, recipe in enumerate(st.session_state.recipes):
             recipe_title = recipe.get("title") or "Delicious Match Option"
             
+            # 🟢 RESTORED CONTAINER: This holds everything and fixes your indentation
+            with st.expander(f"📖 {recipe_title}", expanded=True):
                 
-                # 2. Side-by-Side Ingredient Breakdown Columns
+                # 🚫 PHOTOS REMOVED: st.image logic has been completely left out here
+                
+                # # 2. Side-by-Side Ingredient Breakdown Columns
                 st.markdown("### 🛒 Ingredients Required")
                 used_ings = recipe.get("usedIngredients", [])
                 missed_ings = recipe.get("missedIngredients", [])
@@ -220,9 +224,11 @@ with tab_cook:
                     st.markdown("**🟢 Ingredients You Have:**")
                     if used_ings:
                         for ing in used_ings:
+                            # 🟢 FIXED syntax error: f-string 'f' is outside the quotes
                             st.write(f"- {ing.get('original', ing.get('name'))}")
                     else:
                         st.write("- None listed")
+                        
                 with col_ing2:
                     st.markdown("**🔴 Ingredients You Need to Buy:**")
                     if missed_ings:
