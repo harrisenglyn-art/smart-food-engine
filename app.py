@@ -73,19 +73,29 @@ with tab_cook:
                 with st.spinner("Searching and parsing recipe instructions..."):
                     raw_results = search_recipes_by_ingredients(user_ingredients)
                     
-                    # 🟢 FORCE FIX 1: Grab ONLY the top 3 options from the initial ingredient search
+                    # 🔍 DEBUG PRINT 1: See what the initial ingredient search returns
+                    # st.write("Raw Ingredient Search Output:", raw_results)
+                    
                     top_3_raw = raw_results[:3]
                     
                     hydrated_recipes = []
                     for item in top_3_raw:
-                        full_detail = get_recipe_details(item["id"])
-                        if full_detail:
-                            # Merge ingredient matching metrics into the full detail dictionary
+                        # Fetch the deep profile layout containing instructions
+                        full_detail = get_recipe_details(item.get("id"))
+                        
+                        # 🔍 DEBUG PRINT 2: See if the instructions endpoint is returning real data or an error
+                        # st.write(f"Hydration Data for ID {item.get('id')}:", full_detail)
+                        
+                        if full_detail and "status" not in full_detail:  # Ensure it's not an error response
                             full_detail["usedIngredients"] = item.get("usedIngredients", [])
                             full_detail["missedIngredients"] = item.get("missedIngredients", [])
                             hydrated_recipes.append(full_detail)
+                        else:
+                            # Show a clear error on screen if the API is failing or out of points
+                            st.error(f"Failed to hydrate recipe ID {item.get('id')}. The API returned an error or empty profile.")
                     
                     st.session_state.recipes = hydrated_recipes
+
 
     # Render Active Hydrated Cards Below Search Operation
     if st.session_state.recipes:
