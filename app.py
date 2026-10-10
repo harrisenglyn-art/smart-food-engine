@@ -125,8 +125,7 @@ tab_cook, tab_go_out = st.tabs(["🔍 Cook at Home", "🚗 Go Out to Eat"])
 # =============================================================================
 # 2. OPEN THE COOKING WORKSPACE
 # =============================================================================
-with tab_cook:
-
+    with tab_cook:
         st.header("Cook a Perfect Meal")
     
         # 1. DEFINE THE ENGINE'S CATEGORIZED INGREDIENT LAUNCH DATASET
