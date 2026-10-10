@@ -93,10 +93,11 @@ with tab_cook:
         st.subheader("🍳 Top 3 Recommended Match Options")
         
         for recipe in st.session_state.recipes:
-            # 🟢 FORCE FIX 2: Correctly pull the proper title key
+            # Cleanly pull the title or fallback safely
             recipe_title = recipe.get("title") or recipe.get("name") or "Delicious Match Option"
             
             with st.expander(f"📖 {recipe_title}", expanded=True):
+                # Ensure the image loads properly
                 if recipe.get("image"):
                     st.image(recipe["image"], use_container_width=True)
                 
@@ -119,31 +120,28 @@ with tab_cook:
                                 st.write(f"- {ing.get('original', ing.get('name'))}")
                         else:
                             st.write("- None! You have everything!")
-                else:
-                    # Fallback if displaying a text file recipe profile layout
-                    extended_ingredients = recipe.get("extendedIngredients", [])
-                    for ing in extended_ingredients:
-                        st.write(f"- {ing.get('original')}")
                 
                 st.markdown("---")
                 
-                # --- 📋 SECTION B: STEP-BY-STEP INSTRUCTIONS ---
+                # --- 📋 SECTION B: STEP-BY-STEP INSTRUCTIONS (FIXED UNPACKING) ---
                 st.markdown("### 📋 Step-by-Step Instructions")
                 analyzed = recipe.get("analyzedInstructions")
                 
+                # 🟢 FIXED: Safely look inside the first element of the list array
                 if analyzed and isinstance(analyzed, list) and len(analyzed) > 0:
-                    # Target the instruction nested block container list directly
-                    steps = analyzed[0].get("steps", [])
+                    first_instruction_block = analyzed[0]
+                    steps = first_instruction_block.get("steps", [])
+                    
                     if steps:
                         for step in steps:
                             st.write(f"**Step {step.get('number')}:** {step.get('step')}")
                     else:
                         st.write("Directions are missing structural data rows.")
                 elif recipe.get("instructions"):
+                    # Backup fallback if it returns raw HTML/Text strings instead of list arrays
                     st.write(recipe["instructions"])
                 else:
                     st.write("Mix ingredients well and cook thoroughly according to taste!")
-
 # =============================================================================
 # 🚗 TAB 2: GO OUT TO EAT (RESTORED WITH GOOGLE PLACES API)
 # =============================================================================
