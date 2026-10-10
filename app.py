@@ -6,7 +6,7 @@ def get_recipe_details(recipe_id):
     SPOONACULAR_API_KEY = st.secrets.get("SPOONACULAR_API_KEY", "").strip()
     
     # 🟢 VERIFIED URL ALIGNMENT CONSTRUCTION
-    url = "https://api.spoonacular.com/recipes/{recipe_id}/information"
+    url = f"https://api.spoonacular.com/recipes/{recipe_id}/information"
     params = {"apiKey": SPOONACULAR_API_KEY}
     
     try:
@@ -18,22 +18,35 @@ def get_recipe_details(recipe_id):
     except Exception as e:
         return {}
 
-def search_recipes_by_ingredients(ingredients_string):
-    """Fetches matching recipes from Spoonacular based on matching raw text lists."""
+def search_recipes_by_ingredients(ingredients_string, cuisine="Any", diet="None", max_time=60):
+    """Fetches matching recipes from Spoonacular while filtering by custom cuisine, diet, and cooking time parameters."""
     SPOONACULAR_API_KEY = st.secrets.get("SPOONACULAR_API_KEY", "").strip()
     
-    # 🟢 VERIFIED URL ALIGNMENT CONSTRUCTION
-    url = "https://api.spoonacular.com/recipes/findByIngredients"
+    # Switch to complexSearch to natively support multi-parameter matrix filters
+    url = "https://spoonacular.com"
+    
     params = {
         "apiKey": SPOONACULAR_API_KEY,
-        "ingredients": ingredients_string,
-        "number": 5
+        "includeIngredients": ingredients_string,
+        "number": 3,
+        "addRecipeInformation": True,
+        "fillIngredients": True
     }
+    
+    # Dynamically inject advanced selection tags from the user's dropdowns
+    if cuisine != "Any":
+        params["cuisine"] = cuisine
+    if diet != "None":
+        params["diet"] = diet
+    if max_time:
+        params["maxReadyTime"] = max_time
+        
     try:
         response = requests.get(url, params=params)
-        return response.json()
+        data = response.json()
+        return data.get("results", [])
     except Exception as e:
-        st.error(f"Error fetching recipe database query: {e}")
+        st.error(f"Error fetching filtered recipe database query: {e}")
         return []
 
 # # 1. Unified User Search Trigger Engine
@@ -85,17 +98,52 @@ tab_cook, tab_go_out = st.tabs(["🔍 Cook at Home", "🚗 Go Out to Eat"])
 with tab_cook:
     st.header("Cook a Perfect Meal")
     
-    # Restored user input fields (Your lines 88-89)
+    # 🟢 STEP 1: RENDER ALL WIDGET INPUT FIELDS FIRST SO THE VARIABLES EXIST
     user_ingredients = st.text_input("Enter your available ingredients:", key="ingredients_input")
 
-    # 🟢 MOVE ALL API OPERATIONS DOWN HERE INDENTED BY 4 SPACES:
-    if st.button("Generate Home Recipes", type="primary", key="cook_tab_primary_generator"):
+    col1, col2 = st.columns(2)
+    with col1:
+        cuisine_cook = st.selectbox(
+            "Cuisine Choice", 
+            [
+                "Any", "African", "American", "Asian", "British", "Cajun", "Caribbean", 
+                "Chinese", "Eastern European", "European", "French", "German", "Greek", 
+                "Indian", "Irish", "Italian", "Japanese", "Jewish", "Korean", 
+                "Latin American", "Mediterranean", "Mexican", "Middle Eastern", "Nordic", 
+                "Southern", "Spanish", "Thai", "Vietnamese"
+            ],
+            key="c_cook_dropdown"
+        )
+        mood_cook = st.selectbox("Current Mood", ["Comfort Food", "Quick & Easy", "Healthy & Light", "Cozy"], key="m_cook_dropdown")
+        
+    with col2:
+        health_goal = st.selectbox(
+            "Dietary Targets", 
+            [
+                "None", "Gluten Free", "Ketogenic", "Vegetarian", "Lacto-Vegetarian", 
+                "Ovo-Vegetarian", "Vegan", "Pescetarian", "Paleo", "Primal", 
+                "Low FODMAP", "Whole30"
+            ], 
+            key="h_goal_dropdown"
+        )
+        servings = st.number_input("Number of Servings Needed", min_value=1, max_value=20, value=2, step=1, key="s_cook_input")
+
+    max_time = st.slider("Max Prep/Cooking Time (Minutes)", min_value=10, max_value=120, value=60, step=5, key="t_c_slider")
+
+    # 🟢 STEP 2: UNIFIED USER SEARCH TRIGGER (Everything nested cleanly inside)
+    if st.button("Generate Home Recipes", type="primary", key="cook_tab_primary_generator_v3"):
         if not user_ingredients:
             st.warning("Please input ingredients to match!")
         else:
             with st.spinner("Searching and parsing recipe instructions..."):
-                raw_results = search_recipes_by_ingredients(user_ingredients)
-                
+                # 🟢 FIXED: Kept all parameters perfectly indented to stay inside the button context loop
+                raw_results = search_recipes_by_ingredients(
+                    user_ingredients,
+                    cuisine=cuisine_cook,
+                    diet=health_goal,
+                    max_time=max_time
+                )
+
                 top_3_raw = raw_results[:3]
                 hydrated_recipes = []
                 
