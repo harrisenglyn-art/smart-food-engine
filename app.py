@@ -126,7 +126,7 @@ if st.button("Generate Home Recipes", type="primary"):
                 # Save the fully detailed recipes to session state for the UI cards
                 st.session_state.recipes = hydrated_recipes
 
-                    st.info("🍳 Searching Spoonacular database for your top 3 ranked options...")
+                st.info("🍳 Searching Spoonacular database for your top 3 ranked options...")
                                         
                     # 🟢 FIX 1: Set correct production API path destination endpoint URL
                     url = "https://api.spoonacular.com/recipes/complexSearch"
