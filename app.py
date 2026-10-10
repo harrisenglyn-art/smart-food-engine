@@ -209,10 +209,6 @@ with tab_cook:
         for index, recipe in enumerate(st.session_state.recipes):
             recipe_title = recipe.get("title") or "Delicious Match Option"
             
-            with st.expander(f"📖 {recipe_title}", expanded=True):
-                # 1. Image Layout Element
-                if recipe.get("image"):
-                    st.image(recipe["image"], use_container_width=True)
                 
                 # 2. Side-by-Side Ingredient Breakdown Columns
                 st.markdown("### 🛒 Ingredients Required")
