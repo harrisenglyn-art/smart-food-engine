@@ -91,11 +91,6 @@ else:
         st.header("Cook a Perfect Meal")
 # 🟢 Add this right ABOVE your "Unified User Search Trigger" button block:
 user_ingredients = st.text_input("Enter your available ingredients (separated by commas):", key="ingredients_input")
-
-# # 1. Unified User Search Trigger
-if st.button("Generate Home Recipes", type="primary"):
-    if not user_ingredients:
-        st.warning("Please input ingredients to match!")
         
         col1, col2 = st.columns(2)
         with col1:
