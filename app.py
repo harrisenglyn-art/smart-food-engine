@@ -224,8 +224,8 @@ with tab_cook:
                     )
 
 
-                        top_3_raw = raw_results[:3]
-                        hydrated_recipes = []
+                    top_3_raw = raw_results[:3]
+                    hydrated_recipes = []
                 
                 for item in top_3_raw:
                     full_detail = get_recipe_details(item.get("id"))
