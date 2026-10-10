@@ -292,34 +292,44 @@ with tab_go_out:
                         "key": GOOGLE_PLACES_API_KEY
                     }
                     
-                    try:
-                        response = requests.get(places_url, params=places_params)
-                        places_data = response.json()
+                try:
+                    response = requests.get(places_url, params=places_params)
+                    places_data = response.json()
+                    
+                    # 🟢 DIAGNOSTIC READOUT: Check if Google sent back an error status key
+                    google_status = places_data.get("status")
+                    
+                    if google_status == "REQUEST_DENIED":
+                        error_msg = places_data.get("error_message", "No extra message provided.")
+                        st.error(f"🛑 Google API Request Denied: {error_msg}")
+                        st.info("💡 Quick Fix: Check your Google Cloud Console to ensure the 'Places API' is enabled and your billing account is active.")
+                    elif google_status == "INVALID_REQUEST":
+                        st.error("🛑 Google API Error: Invalid Request. The parameters or URL format are malformed.")
+                    elif google_status == "OVER_QUERY_LIMIT":
+                        st.error("🛑 Google API Error: Over Query Limit. Your Google account ran out of temporary trial API credits.")
+                    else:
+                        # Process results normally if status is OK or anything else
                         restaurants = places_data.get("results", [])
                         
                         if restaurants:
-                            # Keep track of valid results to render cleanly
                             valid_count = 0
-                            
                             for rest in restaurants:
                                 name = rest.get("name", "Unknown Restaurant")
                                 address = rest.get("formatted_address", "No address listed")
                                 rating = rest.get("rating", "No ratings yet")
                                 status = "🟢 Open Now" if rest.get("opening_hours", {}).get("open_now") else "🔴 Closed"
                                 
-                                # Render Clean Container Card Profiles Natively
                                 with st.container(border=True):
                                     st.markdown(f"### 🏪 {name}")
                                     st.write(f"📍 **Address:** {address}")
                                     st.write(f"⭐ **Google Rating:** {rating} / 5  |  Status: {status}")
                                 valid_count += 1
                                 
-                            if valid_count == 0:
-                                st.info("No matching locations found for that specific radius query criteria.")
-                            else:
-                                st.success(f"Successfully unpacked {valid_count} excellent matching options nearby!")
+                            st.success(f"Successfully unpacked {valid_count} excellent matching options nearby!")
                         else:
                             st.info("No matching locations found for that specific criteria query layout.")
+                            # Show raw API response if empty to help debug hidden anomalies
+                            # st.write("Raw Google Data:", places_data)
                             
-                    except Exception as e:
-                        st.error(f"Failed to communicate with Google Places interface: {e}")
+                except Exception as e:
+                    st.error(f"Failed to communicate with Google Places interface: {e}")
