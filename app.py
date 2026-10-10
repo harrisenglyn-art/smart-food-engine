@@ -100,7 +100,25 @@ else:
             servings = st.number_input("Number of Servings Needed", min_value=1, max_value=20, value=2, step=1, key="s_cook")
             
         max_time = st.slider("Max Prep/Cooking Time (Minutes)", min_value=10, max_value=120, value=60, step=5, key="t_cook")
-        
+# 1. User triggers the search (e.g., clicking a button)
+if st.button("Find Recipes"):
+    if user_ingredients:
+        with st.spinner("Searching for matching recipes..."):
+            # This gets the basic list (names and images only)
+            raw_results = search_recipes_by_ingredients(user_ingredients)
+            
+            # --- 🟢 PASTE CODE 2 HERE ---
+            hydrated_recipes = []
+            for item in raw_results:
+                # Use the new helper function to get the instructions for each recipe ID
+                full_detail = get_recipe_details(item["id"])
+                if full_detail:
+                    hydrated_recipes.append(full_detail)
+            # ----------------------------
+
+            # 2. Save the fully hydrated data to your state or variable used by the UI
+            st.session_state.recipes = hydrated_recipes
+
         if st.button("Generate Home Recipes", type="primary"):
             if not ingredients:
                 st.warning("Please input ingredients to match!")
