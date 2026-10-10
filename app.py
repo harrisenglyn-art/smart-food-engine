@@ -272,7 +272,7 @@ with tab_go_out:
         price_range = st.select_slider("Price Level Target", options=["$", "$$", "$$$", "$$$$"], value="$$", key="t_price")
 
     # 1. Google Places Search Trigger Engine
-    if st.button("Find Nearby Restaurants", type="primary", key="takeout_tab_primary_generator"):
+    if st.button("Find Nearby Restaurants", type="primary", key="takeout_tab_final_launch_button_v2"):
         if not takeout_location:
             st.warning("Please provide a location target to route coordinates!")
         else:
@@ -283,39 +283,43 @@ with tab_go_out:
             else:
                 with st.spinner("Querying Google Places dataset for matching venues..."):
                     
-                    # 🟢 THE FIX: Bake the radius string directly into the text query!
-                    # This tells Google exactly what you mean without requiring complex latitude/longitude math.
+                    # 🟢 SYSTEM FIX: Clean text query optimization format that Google recognizes instantly
                     places_url = "https://maps.googleapis.com/maps/api/place/textsearch/json"
-                    query_string = f"{cuisine_takeout} restaurant within {search_radius} miles of {takeout_location}"
+                    query_string = f"{cuisine_takeout} near {takeout_location}"
                     
                     places_params = {
                         "query": query_string,
                         "key": GOOGLE_PLACES_API_KEY
                     }
                     
-                try:
-                    # 🟢 All execution blocks are aligned together at a 20-space depth
-                    response = requests.get(places_url, params=places_params)
-                    places_data = response.json()
-                    restaurants = places_data.get("results", [])
-                    
-                    if restaurants:
-                        st.success(f"Found {len(restaurants)} excellent matching options nearby!")
+                    try:
+                        response = requests.get(places_url, params=places_params)
+                        places_data = response.json()
+                        restaurants = places_data.get("results", [])
                         
-                        # Render Restored Data Output Profiles
-                        for rest in restaurants:
-                            name = rest.get("name", "Unknown Restaurant")
-                            address = rest.get("formatted_address", "No address listed")
-                            rating = rest.get("rating", "No ratings yet")
-                            status = "🟢 Open Now" if rest.get("opening_hours", {}).get("open_now") else "🔴 Closed"
+                        if restaurants:
+                            # Keep track of valid results to render cleanly
+                            valid_count = 0
                             
-                            with st.container(border=True):
-                                st.markdown(f"### 🏪 {name}")
-                                st.write(f"📍 **Address:** {address}")
-                                st.write(f"⭐ **Google Rating:** {rating} / 5  |  Status: {status}")
-                    else:
-                        st.info("No matching locations found for that specific radius query criteria.")
-                        
-                except Exception as e:
-                    # 🟢 FIXED: Positioned perfectly to catch errors from the try block right above it
-                    st.error(f"Failed to communicate with Google Places interface: {e}")
+                            for rest in restaurants:
+                                name = rest.get("name", "Unknown Restaurant")
+                                address = rest.get("formatted_address", "No address listed")
+                                rating = rest.get("rating", "No ratings yet")
+                                status = "🟢 Open Now" if rest.get("opening_hours", {}).get("open_now") else "🔴 Closed"
+                                
+                                # Render Clean Container Card Profiles Natively
+                                with st.container(border=True):
+                                    st.markdown(f"### 🏪 {name}")
+                                    st.write(f"📍 **Address:** {address}")
+                                    st.write(f"⭐ **Google Rating:** {rating} / 5  |  Status: {status}")
+                                valid_count += 1
+                                
+                            if valid_count == 0:
+                                st.info("No matching locations found for that specific radius query criteria.")
+                            else:
+                                st.success(f"Successfully unpacked {valid_count} excellent matching options nearby!")
+                        else:
+                            st.info("No matching locations found for that specific criteria query layout.")
+                            
+                    except Exception as e:
+                        st.error(f"Failed to communicate with Google Places interface: {e}")
