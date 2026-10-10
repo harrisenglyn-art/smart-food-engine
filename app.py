@@ -229,57 +229,57 @@ with tab_cook:
     # =============================================================================
 
     # Render Active Clean Cards Below Search Operation
-    if st.session_state.recipes:
-        st.markdown("---")
-        st.subheader("🍳 Top 3 Recommended Match Options")
+        if st.session_state.recipes:
+            st.markdown("---")
+            st.subheader("🍳 Top 3 Recommended Match Options")
         
-        for index, recipe in enumerate(st.session_state.recipes):
-            recipe_title = recipe.get("title") or "Delicious Match Option"
+            for index, recipe in enumerate(st.session_state.recipes):
+                recipe_title = recipe.get("title") or "Delicious Match Option"
             
-            # 🟢 RESTORED CONTAINER: This holds everything and fixes your indentation
-            with st.expander(f"📖 {recipe_title}", expanded=True):
+                # 🟢 RESTORED CONTAINER: This holds everything and fixes your indentation
+                with st.expander(f"📖 {recipe_title}", expanded=True):
                 
-                # 🚫 PHOTOS REMOVED: st.image logic has been completely left out here
+                    # 🚫 PHOTOS REMOVED: st.image logic has been completely left out here
                 
-                # # 2. Side-by-Side Ingredient Breakdown Columns
-                st.markdown("### 🛒 Ingredients Required")
-                used_ings = recipe.get("usedIngredients", [])
-                missed_ings = recipe.get("missedIngredients", [])
+                    # # 2. Side-by-Side Ingredient Breakdown Columns
+                    st.markdown("### 🛒 Ingredients Required")
+                    used_ings = recipe.get("usedIngredients", [])
+                    missed_ings = recipe.get("missedIngredients", [])
                 
-                col_ing1, col_ing2 = st.columns(2)
-                with col_ing1:
-                    st.markdown("**🟢 Ingredients You Have:**")
-                    if used_ings:
-                        for ing in used_ings:
-                            # 🟢 FIXED syntax error: f-string 'f' is outside the quotes
-                            st.write(f"- {ing.get('original', ing.get('name'))}")
-                    else:
-                        st.write("- None listed")
+                    col_ing1, col_ing2 = st.columns(2)
+                    with col_ing1:
+                        st.markdown("**🟢 Ingredients You Have:**")
+                        if used_ings:
+                            for ing in used_ings:
+                                # 🟢 FIXED syntax error: f-string 'f' is outside the quotes
+                                st.write(f"- {ing.get('original', ing.get('name'))}")
+                        else:
+                            st.write("- None listed")
                         
-                with col_ing2:
-                    st.markdown("**🔴 Ingredients You Need to Buy:**")
-                    if missed_ings:
-                        for ing in missed_ings:
-                            st.write(f"- {ing.get('original', ing.get('name'))}")
-                    else:
-                        st.write("- None! You have everything!")
+                    with col_ing2:
+                        st.markdown("**🔴 Ingredients You Need to Buy:**")
+                        if missed_ings:
+                            for ing in missed_ings:
+                                st.write(f"- {ing.get('original', ing.get('name'))}")
+                        else:
+                            st.write("- None! You have everything!")
                 
-                st.markdown("---")
+                    st.markdown("---")
                 
-                # 🟢 3. INSTANT DOWNLOADABLE PDF BUTTON (Hides long text clutter on your site)
-                try:
-                    pdf_data = generate_recipe_pdf(recipe)
-                    clean_filename = recipe_title.lower().replace(" ", "_")
+                    # 🟢 3. INSTANT DOWNLOADABLE PDF BUTTON (Hides long text clutter on your site)
+                    try:
+                        pdf_data = generate_recipe_pdf(recipe)
+                        clean_filename = recipe_title.lower().replace(" ", "_")
                     
-                    st.download_button(
-                        label="📥 Download Printable Recipe Guide (PDF)",
-                        data=pdf_data,
-                        file_name=f"{clean_filename}_guide.pdf",
-                        mime="application/pdf",
-                        key=f"dl_pdf_btn_{index}_{recipe.get('id', index)}" # Fully unique context iteration key
-                    )
-                except Exception as e:
-                    st.error("Print layout compiling engine temporarily updating.")
+                        st.download_button(
+                            label="📥 Download Printable Recipe Guide (PDF)",
+                            data=pdf_data,
+                            file_name=f"{clean_filename}_guide.pdf",
+                            mime="application/pdf",
+                            key=f"dl_pdf_btn_{index}_{recipe.get('id', index)}" # Fully unique context iteration key
+                        )
+                    except Exception as e:
+                        st.error("Print layout compiling engine temporarily updating.")
                     
 # =============================================================================
 # 🚗 TAB 2: GO OUT TO EAT (RESTORED WITH GOOGLE PLACES API)
