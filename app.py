@@ -167,7 +167,7 @@ else:
                                         else:
                                             st.write("Refer to directions below for items.")
                                             
-                                                                                st.markdown("### 📋 Step-by-Step Instructions")
+                                        st.markdown("### 📋 Step-by-Step Instructions")
                                         analyzed = recipe.get("analyzedInstructions")
                                         
                                         # 🟢 FIXED: Target the first dictionary index inside the instruction list cleanly
