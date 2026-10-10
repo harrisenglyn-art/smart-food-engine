@@ -284,7 +284,7 @@ with tab_go_out:
                 with st.spinner("Querying Google Places (New) dataset for matching venues..."):
                     
                     # 🟢 NEW COMPATIBLE GOOGLE MAPS ENDPOINT
-                    places_url = "https://googleapis.com"
+                    places_url = "https://places.googleapis.com/v1/places:searchText"
                     
                     # Modern APIs pass data in a JSON body rather than raw URL parameters
                     payload_data = {
